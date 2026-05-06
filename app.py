@@ -224,7 +224,7 @@ st.markdown("""
 <span class='trader-badge tb-one'>O'Neil</span>
 <span class='trader-badge tb-ptj'>P.T.Jones</span>
 <span class='trader-badge tb-liv'>Livermore</span>
-&nbsp;v2 백테스트 검증 전략 (PF 1.85 / 승률 46.1%) — 하라는 대로만 하세요
+&nbsp;v2 백테스트 검증 전략 (PF 1.85 / 승률 46.1)
 </div>
 </div>
 <div style='text-align:right'>
