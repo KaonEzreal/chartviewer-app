@@ -79,7 +79,15 @@ div[data-testid="stExpander"]{background:var(--card2)!important;border:1px solid
 footer,header,#MainMenu{display:none!important;}
 </style>
 """, unsafe_allow_html=True)
+/* 🔥 expander arrow + 'arrow down' 텍스트 제거 (완벽 해결) */
+div[data-testid="stExpander"] summary {
+    font-size: 0 !important;
+}
 
+/* 실제 제목만 다시 보이게 */
+div[data-testid="stExpander"] summary > * {
+    font-size: 14px !important;
+}
 # ── 유틸 함수 ────────────────────────────────────────────────────
 def money(x): return f"${x:,.2f}"
 def fmt_mcap(x):
