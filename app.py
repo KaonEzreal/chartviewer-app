@@ -268,7 +268,14 @@ with _tabs[0]:
     tp=sig.trade_plan
 
     # ── v2 매매 가이드 패널 ───────────────────────────────────────
-    with st.expander("📋 v2 백테스트 실전 매매 가이드 — 하라는 대로만 하세요", expanded=True):
+    # 가이드 패널 (expander 대신 일반 컨테이너 — 겹침 버그 방지)
+if "guide_open" not in st.session_state:
+    st.session_state["guide_open"] = True
+if st.button("📋 v2 매매 가이드 " + ("▲ 접기" if st.session_state["guide_open"] else "▼ 펼치기"), key="guide_toggle"):
+    st.session_state["guide_open"] = not st.session_state["guide_open"]
+
+if st.session_state["guide_open"]:
+    with st.container():
 
         # 상단: 추천 + 충족률 바
         st.markdown(f"""
@@ -384,16 +391,29 @@ v2: +18% 달성 시 보유량 50% 청산<br>
 </div>
 </div>
 <div style='background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.25);border-radius:12px;padding:14px;'>
-<div style='font-size:10px;color:#5a7299;margin-bottom:4px;font-weight:700;'>🔄 잔량 50% — 트레일링 스톱</div>
-<div style='font-size:18px;font-weight:800;color:#06b6d4;'>고점 대비 -{tp.trail_pct*100:.0f}% 추적</div>
-<div style='font-size:12px;color:#06b6d4;font-weight:600;margin-top:3px;'>{sc.grade}등급 트레일링 적용</div>
-<div style='background:#1e3a5f;border-radius:99px;height:5px;margin:8px 0;overflow:hidden;'>
+<div style='font-size:10px;color:#5a7299;margin-bottom:4px;font-weight:700;'>🔄 잔량 50% — 트레일링 스톱 ({sc.grade} 등급: 고점 대비 -{tp.trail_pct*100:.0f}%)</div>
+<div style='font-size:15px;font-weight:800;color:#06b6d4;margin-bottom:6px;'>매일 저녁 손절가를 직접 올리세요</div>
+<div style='background:#1e3a5f;border-radius:99px;height:5px;margin:6px 0 8px;overflow:hidden;'>
 <div style='width:100%;height:100%;background:#06b6d4;border-radius:99px;'></div>
 </div>
-<div style='font-size:10px;color:#5a7299;line-height:1.5;'>
-1차 익절 후 트레일링 → 7%로 타이트<br>
-고점 갱신 시 자동 상향 추적<br>
-<b style='color:#06b6d4;'>추세 끝까지 보유 극대화</b>
+<div style='background:rgba(0,0,0,0.25);border-radius:8px;padding:8px 10px;'>
+<div style='font-size:10px;font-weight:700;color:#06b6d4;margin-bottom:5px;'>📌 트레일링 스톱 실전 방법 (매일 반복)</div>
+<div style='font-size:10px;color:#d8e8ff;line-height:1.8;'>
+<span style='color:#f59e0b;font-weight:700;'>① 매일 장 마감 후</span> 해당 종목 고점 확인<br>
+<span style='color:#f59e0b;font-weight:700;'>② 새 손절가 계산</span> = 오늘 고점 × (1 - {tp.trail_pct*100:.0f}%)<br>
+<span style='color:#f59e0b;font-weight:700;'>③ 어제보다 높으면</span> 증권사 앱에서 손절가 상향 변경<br>
+<span style='color:#f59e0b;font-weight:700;'>④ 고점보다 내려가면</span> 즉시 시장가 매도<br>
+<span style='color:#5a7299;font-size:9px;'>* 1차 익절(+18%) 후에는 -{V2_PARTIAL_TRAIL*100:.0f}%로 더 타이트하게 적용</span>
+</div>
+</div>
+<div style='margin-top:8px;background:rgba(6,182,212,0.08);border-radius:7px;padding:7px 10px;'>
+<div style='font-size:10px;font-weight:700;color:#06b6d4;margin-bottom:3px;'>📝 계산 예시 (AAPL, S등급 10%)</div>
+<div style='font-size:10px;color:#5a7299;line-height:1.7;'>
+진입 $200 → 고점 $220 달성<br>
+새 손절가 = $220 × 0.90 = <b style='color:#06b6d4;'>$198</b><br>
+다음날 고점 $230 → $230 × 0.90 = <b style='color:#06b6d4;'>$207</b> (상향)<br>
+주가가 $207 아래로 → <b style='color:#ef4444;'>즉시 전량 매도</b>
+</div>
 </div>
 </div>
 </div>
