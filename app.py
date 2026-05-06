@@ -279,7 +279,7 @@ with _tabs[0]:
     tp=sig.trade_plan
 
     # ── v2 매매 가이드 패널 ───────────────────────────────────────
-    with st.expander("📋 v2 백테스트 실전 매매 가이드 — 하라는 대로만 하세요", expanded=True):
+    with st.expander("📋 v2 백테스트 실전 매매 가이드", expanded=True):
 
         # 상단: 추천 + 충족률 바
         st.markdown(f"""
