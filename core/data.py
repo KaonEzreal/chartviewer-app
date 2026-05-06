@@ -16,7 +16,15 @@ import datetime as dt
 import pandas as pd
 import streamlit as st
 import yfinance as yf
-
+df = yf.download(
+    ticker,
+    period="5d",
+    interval="1m",
+    auto_adjust=True,
+    prepost=True,
+    threads=True,
+    progress=False
+)
 # ── 장중 여부 판단 (미국 동부시간 기준) ─────────────────────────────
 def _is_market_open() -> bool:
     """NYSE 장중 여부: ET 09:30~16:00, 월~금"""
