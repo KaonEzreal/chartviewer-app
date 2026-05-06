@@ -77,17 +77,16 @@ html,body,[class*="css"],.stApp{background:var(--bg)!important;color:var(--text)
 .stButton>button{background:linear-gradient(135deg,#06b6d4,#3b82f6)!important;color:white!important;border:none!important;border-radius:10px!important;font-weight:800!important;font-size:14px!important;padding:10px 24px!important;}
 div[data-testid="stExpander"]{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:12px!important;}
 footer,header,#MainMenu{display:none!important;}
-</style>
-""", unsafe_allow_html=True)
-/* 🔥 expander arrow + 'arrow down' 텍스트 제거 (완벽 해결) */
+/* expander arrow + 'arrow down' 제거 */
 div[data-testid="stExpander"] summary {
     font-size: 0 !important;
 }
 
-/* 실제 제목만 다시 보이게 */
 div[data-testid="stExpander"] summary > * {
     font-size: 14px !important;
 }
+</style>
+""", unsafe_allow_html=True)
 # ── 유틸 함수 ────────────────────────────────────────────────────
 def money(x): return f"${x:,.2f}"
 def fmt_mcap(x):
