@@ -403,7 +403,7 @@ v2: +18% 달성 시 보유량 50% 청산<br>
 <span style='color:#f59e0b;font-weight:700;'>② 새 손절가 계산</span> = 오늘 고점 × (1 - {tp.trail_pct*100:.0f}%)<br>
 <span style='color:#f59e0b;font-weight:700;'>③ 어제보다 높으면</span> 증권사 앱에서 손절가 상향 변경<br>
 <span style='color:#f59e0b;font-weight:700;'>④ 고점보다 내려가면</span> 즉시 시장가 매도<br>
-<span style='color:#5a7299;font-size:9px;'>① 1차 익절(+18%) 후에는 -{V2_PARTIAL_TRAIL*100:.0f}%로 더 타이트하게 적용</span>
+<span style='color:#5a7299;font-size:9px;'>① 1차 익절(+18%) 후에는 -{V2_TRAIL_PCT*100:.0f}%로 더 타이트하게 적용</span>
 </div>
 </div>
 <div style='margin-top:8px;background:rgba(6,182,212,0.08);border-radius:7px;padding:7px 10px;'>
