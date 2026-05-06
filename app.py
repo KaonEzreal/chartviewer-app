@@ -90,7 +90,19 @@ div, span {
 }
 </style>
 """, unsafe_allow_html=True)
+/* 🔥 expander 화살표 제거 */
+details summary::-webkit-details-marker {
+    display: none;
+}
 
+details summary::marker {
+    display: none;
+}
+
+/* 🔥 혹시 남는 아이콘 제거 */
+div[data-testid="stExpander"] summary {
+    list-style: none;
+}
 # ── 유틸 함수 ────────────────────────────────────────────────────
 def money(x): return f"${x:,.2f}"
 def fmt_mcap(x):
