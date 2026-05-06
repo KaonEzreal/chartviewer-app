@@ -85,6 +85,9 @@ div[data-testid="stExpander"] summary {
 div[data-testid="stExpander"] summary > * {
     font-size: 14px !important;
 }
+div[data-testid="stExpander"] summary {
+    display: none !important;
+}
 </style>
 """, unsafe_allow_html=True)
 # ── 유틸 함수 ────────────────────────────────────────────────────
