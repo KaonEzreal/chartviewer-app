@@ -352,12 +352,12 @@ st.markdown("""
 # ══════════════════════════════════════════════════════════════════
 #  메인 탭 구조
 # ══════════════════════════════════════════════════════════════════
-_tab_chart, _tab_scan = st.tabs(["📈  차트 분석", "🔭  빠른 티커 스캔  (등급별 분류)"])
+_tabs = st.tabs(["📈  차트 분석", "🔭  빠른 티커 스캔  (등급별 분류)"])
 
 # ══════════════════════════════════════════════════════════════════
 #  탭 1 — 차트 분석 (기존 그대로)
 # ══════════════════════════════════════════════════════════════════
-with _tab_chart:
+with _tabs[0]:
 
     # ── 입력 컨트롤 ──────────────────────────────────────────────
     ic1, ic2, ic3, ic4 = st.columns([2.5, 1.4, 1.4, 1])
@@ -413,25 +413,29 @@ with _tab_chart:
         chg_s  = "▲" if chg >= 0 else "▼"
 
         st.markdown(f"""
-        <div class='card'>
-          <div style='display:flex; justify-content:space-between; align-items:flex-start;'>
-            <div>
-              <div style='font-size:28px; font-weight:900; color:#06b6d4; letter-spacing:-0.04em;'>{ticker}</div>
-              <div style='font-size:13px; color:#5a7299; margin-top:2px;'>{name}</div>
-              <div style='margin-top:10px;'>
-                <span class='tag'>{sector or "—"}</span>
-                <span class='tag'>시총 {fmt_mcap(mcap)}</span>
-                {"<span class='tag'>P/E "+f"{pe:.1f}"+"</span>" if pe else ""}
-                {"<span class='tag'>β "+f"{beta:.2f}"+"</span>" if beta else ""}
-              </div>
-            </div>
-            <div style='text-align:right;'>
-              <div style='font-size:34px; font-weight:800;'>{money(last_price)}</div>
-              <div style='font-size:15px; font-weight:700; color:{chg_c};'>{chg_s} {abs(chg):.2f}%</div>
-              <div style='font-size:11px; color:#5a7299; margin-top:4px;'>{tf_choice} · {sig.asof}</div>
-            </div>
-          </div>
-        </div>
+
+
+<div class='card'>
+  <div style='display:flex; justify-content:space-between; align-items:flex-start;'>
+<div>
+  <div style='font-size:28px; font-weight:900; color:#06b6d4; letter-spacing:-0.04em;'>{ticker}</div>
+  <div style='font-size:13px; color:#5a7299; margin-top:2px;'>{name}</div>
+  <div style='margin-top:10px;'>
+<span class='tag'>{sector or "—"}</span>
+<span class='tag'>시총 {fmt_mcap(mcap)}</span>
+{"<span class='tag'>P/E "+f"{pe:.1f}"+"</span>" if pe else ""}
+{"<span class='tag'>β "+f"{beta:.2f}"+"</span>" if beta else ""}
+  </div>
+</div>
+<div style='text-align:right;'>
+  <div style='font-size:34px; font-weight:800;'>{money(last_price)}</div>
+  <div style='font-size:15px; font-weight:700; color:{chg_c};'>{chg_s} {abs(chg):.2f}%</div>
+  <div style='font-size:11px; color:#5a7299; margin-top:4px;'>{tf_choice} · {sig.asof}</div>
+</div>
+  </div>
+</div>
+
+
         """, unsafe_allow_html=True)
 
         fig = make_chart(df, ticker, tf_choice, sig)
@@ -442,46 +446,58 @@ with _tab_chart:
         with mc1:
             wr_adj = sc.williams_r + 100
             st.markdown(f"""
-            <div class='card-sm'>
-              <div class='sec-title'>모멘텀 오실레이터</div>
-              {gauge_html("RSI (14)", sc.rsi_val, 0, 100)}
-              {gauge_html("Stoch %K", sc.stoch_k, 0, 100)}
-              {gauge_html("MFI (14)", sc.mfi_val, 0, 100)}
-              {gauge_html("Williams %R", wr_adj, 0, 100)}
-              {gauge_html("CCI (20) [역산]", max(0,-sc.cci_val/3+50), 0, 100)}
-            </div>
+
+
+<div class='card-sm'>
+  <div class='sec-title'>모멘텀 오실레이터</div>
+  {gauge_html("RSI (14)", sc.rsi_val, 0, 100)}
+  {gauge_html("Stoch %K", sc.stoch_k, 0, 100)}
+  {gauge_html("MFI (14)", sc.mfi_val, 0, 100)}
+  {gauge_html("Williams %R", wr_adj, 0, 100)}
+  {gauge_html("CCI (20) [역산]", max(0,-sc.cci_val/3+50), 0, 100)}
+</div>
+
+
             """, unsafe_allow_html=True)
         with mc2:
             st.markdown(f"""
-            <div class='card-sm'>
-              <div class='sec-title'>추세 & 강도</div>
-              {gauge_html("ADX (14)", sc.adx_val, 0, 60)}
-              {gauge_html("Minervini TT", sc.trend_template['passed'], 0, 8, ".0f", "/8")}
-              {gauge_html("O'Neil RS", sc.rs['rs_score'], 0, 100)}
-              {gauge_html("52주 위치", sc.week52_pos*100, 0, 100, ".0f", "%")}
-              {gauge_html("BB 위치", sc.bb_position*100, 0, 100, ".0f", "%")}
-            </div>
+
+
+<div class='card-sm'>
+  <div class='sec-title'>추세 & 강도</div>
+  {gauge_html("ADX (14)", sc.adx_val, 0, 60)}
+  {gauge_html("Minervini TT", sc.trend_template['passed'], 0, 8, ".0f", "/8")}
+  {gauge_html("O'Neil RS", sc.rs['rs_score'], 0, 100)}
+  {gauge_html("52주 위치", sc.week52_pos*100, 0, 100, ".0f", "%")}
+  {gauge_html("BB 위치", sc.bb_position*100, 0, 100, ".0f", "%")}
+</div>
+
+
             """, unsafe_allow_html=True)
         with mc3:
             macd_c = "#22c55e" if sc.macd_hist > 0 else "#ef4444"
             vwap_c = "#22c55e" if sc.vwap_above else "#ef4444"
             vwap_diff = (last_price / sc.vwap_val - 1)*100 if sc.vwap_val else 0
             st.markdown(f"""
-            <div class='card-sm'>
-              <div class='sec-title'>수급 & 특수 지표</div>
-              <div class='kv'><div class='k'>MACD Hist</div>
-                <div class='v' style='color:{macd_c};'>{sc.macd_hist:+.4f}</div></div>
-              <div class='kv'><div class='k'>ATR%</div>
-                <div class='v'>{sc.atr_pct*100:.2f}%</div></div>
-              <div class='kv'><div class='k'>Volume Ratio</div>
-                <div class='v' style='color:{"#22c55e" if sc.vol_ratio>=1.2 else "#5a7299"};'>{sc.vol_ratio:.2f}x</div></div>
-              <div class='kv'><div class='k'>VWAP 대비</div>
-                <div class='v' style='color:{vwap_c};'>{vwap_diff:+.2f}%</div></div>
-              <div class='kv'><div class='k'>BB Squeeze</div>
-                <div class='v' style='color:{"#f59e0b" if sc.bb_squeeze else "#5a7299"};'>{"⚡수축 감지" if sc.bb_squeeze else "일반"}</div></div>
-              <div class='kv'><div class='k'>VCP 상태</div>
-                <div class='v' style='color:{"#06b6d4" if sc.vcp["breakout_ready"] else "#5a7299"};'>{"🚀돌파준비" if sc.vcp["breakout_ready"] else ("⚡감지" if sc.vcp["detected"] else "—")}</div></div>
-            </div>
+
+
+<div class='card-sm'>
+  <div class='sec-title'>수급 & 특수 지표</div>
+  <div class='kv'><div class='k'>MACD Hist</div>
+<div class='v' style='color:{macd_c};'>{sc.macd_hist:+.4f}</div></div>
+  <div class='kv'><div class='k'>ATR%</div>
+<div class='v'>{sc.atr_pct*100:.2f}%</div></div>
+  <div class='kv'><div class='k'>Volume Ratio</div>
+<div class='v' style='color:{"#22c55e" if sc.vol_ratio>=1.2 else "#5a7299"};'>{sc.vol_ratio:.2f}x</div></div>
+  <div class='kv'><div class='k'>VWAP 대비</div>
+<div class='v' style='color:{vwap_c};'>{vwap_diff:+.2f}%</div></div>
+  <div class='kv'><div class='k'>BB Squeeze</div>
+<div class='v' style='color:{"#f59e0b" if sc.bb_squeeze else "#5a7299"};'>{"⚡수축 감지" if sc.bb_squeeze else "일반"}</div></div>
+  <div class='kv'><div class='k'>VCP 상태</div>
+<div class='v' style='color:{"#06b6d4" if sc.vcp["breakout_ready"] else "#5a7299"};'>{"🚀돌파준비" if sc.vcp["breakout_ready"] else ("⚡감지" if sc.vcp["detected"] else "—")}</div></div>
+</div>
+
+
             """, unsafe_allow_html=True)
 
         st.markdown("<br><div class='sec-title'>이동평균 현황</div>", unsafe_allow_html=True)
@@ -494,26 +510,34 @@ with _tab_chart:
             dc = "#22c55e" if d_pct >= 0 else "#ef4444"
             with col:
                 st.markdown(f"""
-                <div class='card-sm' style='text-align:center;'>
-                  <div class='k'>{lbl}</div>
-                  <div style='font-size:13px; font-weight:700; margin-top:3px;'>{money(val)}</div>
-                  <div style='font-size:12px; font-weight:600; color:{dc};'>{d_pct:+.1f}%</div>
-                </div>""", unsafe_allow_html=True)
+
+
+<div class='card-sm' style='text-align:center;'>
+  <div class='k'>{lbl}</div>
+  <div style='font-size:13px; font-weight:700; margin-top:3px;'>{money(val)}</div>
+  <div style='font-size:12px; font-weight:600; color:{dc};'>{d_pct:+.1f}%</div>
+</div>
+
+                """, unsafe_allow_html=True)
 
     # ── 오른쪽 패널 ───────────────────────────────────────────────
     with right:
         col_c = sc_color(sc.total)
         bc    = badge_cls(sig.action_color)
         st.markdown(f"""
-        <div class='card-highlight' style='text-align:center;'>
-          <div class='k' style='margin-bottom:8px; font-size:11px;'>5대 트레이더 통합 점수</div>
-          <div class='score-big' style='color:{col_c};'>{sc.total}</div>
-          <div class='score-grade' style='color:{col_c}; margin-top:6px;'>[{sc.grade}]</div>
-          <div style='margin-top:14px;'>
-            <span class='action-badge {bc}'>{sig.action}</span>
-          </div>
-          <div style='font-size:12px; color:#5a7299; margin-top:8px; line-height:1.4;'>{sig.action_detail}</div>
-        </div>
+
+
+<div class='card-highlight' style='text-align:center;'>
+  <div class='k' style='margin-bottom:8px; font-size:11px;'>5대 트레이더 통합 점수</div>
+  <div class='score-big' style='color:{col_c};'>{sc.total}</div>
+  <div class='score-grade' style='color:{col_c}; margin-top:6px;'>[{sc.grade}]</div>
+  <div style='margin-top:14px;'>
+<span class='action-badge {bc}'>{sig.action}</span>
+  </div>
+  <div style='font-size:12px; color:#5a7299; margin-top:8px; line-height:1.4;'>{sig.action_detail}</div>
+</div>
+
+
         """, unsafe_allow_html=True)
 
         st.markdown("<div class='card'>", unsafe_allow_html=True)
@@ -544,111 +568,119 @@ with _tab_chart:
                    "피벗 돌파 대기":"#f59e0b","눌림목 진입":"#a855f7"}.get(tp.entry_type,"#5a7299")
 
         st.markdown(f"""
-        <div class='card' style='border:1px solid rgba(6,182,212,0.3); background:linear-gradient(135deg,rgba(6,182,212,0.05),rgba(0,0,0,0));'>
-          <div class='sec-title'>📋 매매 계획 (Minervini + O'Neil + PTJ + Livermore)</div>
-          <div style='background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.25);
-                      border-radius:10px; padding:10px 14px; margin-bottom:8px;'>
-            <div style='display:flex; justify-content:space-between; align-items:center;'>
-              <div>
-                <div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>🎯 진입가</div>
-                <div style='font-size:22px; font-weight:900; color:#06b6d4;'>{money(tp.entry_price)}</div>
-              </div>
-              <div style='text-align:right;'>
-                <div style='font-size:11px; font-weight:700; color:{etype_c}; margin-bottom:3px;'>{tp.entry_type}</div>
-                <div style='font-size:10px; color:#5a7299;'>1R = ${tp.risk_1r:.2f}</div>
-              </div>
-            </div>
-            <div style='font-size:11px; color:#5a7299; margin-top:5px;'>{tp.entry_reason}</div>
-          </div>
-          <div style='background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25);
-                      border-radius:10px; padding:10px 14px; margin-bottom:8px;'>
-            <div style='display:flex; justify-content:space-between; align-items:center;'>
-              <div>
-                <div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>🛑 손절가</div>
-                <div style='font-size:22px; font-weight:900; color:#ef4444;'>{money(tp.stop_price)}</div>
-              </div>
-              <div style='text-align:right;'>
-                <div style='font-size:14px; font-weight:700; color:#ef4444;'>{tp.stop_pct:.2f}%</div>
-                <div style='font-size:10px; color:#5a7299;'>O'Neil -7% 룰 적용</div>
-              </div>
-            </div>
-            <div style='font-size:10px; color:#5a7299; margin-top:5px;'>{tp.stop_reason}</div>
-          </div>
-          <div style='background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.2);
-                      border-radius:10px; padding:10px 14px; margin-bottom:6px;'>
-            <div style='display:flex; justify-content:space-between; align-items:center;'>
-              <div>
-                <div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>✅ 1차 익절 ({tp.tp1_qty}% 청산)</div>
-                <div style='font-size:20px; font-weight:800; color:#22c55e;'>{money(tp.tp1_price)}</div>
-              </div>
-              <div style='text-align:right;'>
-                <div style='font-size:13px; font-weight:700; color:#22c55e;'>{tp.tp1_pct:+.2f}%</div>
-                <div style='font-size:11px; color:#5a7299;'>R:R {tp.rr1:.1f} : 1</div>
-              </div>
-            </div>
-            <div style='font-size:10px; color:#5a7299; margin-top:4px;'>{tp.tp1_reason}</div>
-          </div>
-          <div style='background:rgba(34,197,94,0.09); border:1px solid rgba(34,197,94,0.3);
-                      border-radius:10px; padding:10px 14px; margin-bottom:6px;'>
-            <div style='display:flex; justify-content:space-between; align-items:center;'>
-              <div>
-                <div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>✅✅ 2차 익절 ({tp.tp2_qty}% 청산)</div>
-                <div style='font-size:20px; font-weight:800; color:#22c55e;'>{money(tp.tp2_price)}</div>
-              </div>
-              <div style='text-align:right;'>
-                <div style='font-size:13px; font-weight:700; color:#22c55e;'>{tp.tp2_pct:+.2f}%</div>
-                <div style='font-size:11px; color:#5a7299;'>R:R {tp.rr2:.1f} : 1</div>
-              </div>
-            </div>
-            <div style='font-size:10px; color:#5a7299; margin-top:4px;'>{tp.tp2_reason}</div>
-          </div>
-          <div style='background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.3);
-                      border-radius:10px; padding:10px 14px; margin-bottom:8px;'>
-            <div style='display:flex; justify-content:space-between; align-items:center;'>
-              <div>
-                <div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>🚀 3차 익절 ({tp.tp3_qty}% 청산)</div>
-                <div style='font-size:20px; font-weight:800; color:#06b6d4;'>{money(tp.tp3_price)}</div>
-              </div>
-              <div style='text-align:right;'>
-                <div style='font-size:13px; font-weight:700; color:#06b6d4;'>{tp.tp3_pct:+.2f}%</div>
-                <div style='font-size:11px; color:#5a7299;'>R:R {tp.rr3:.1f} : 1</div>
-              </div>
-            </div>
-            <div style='font-size:10px; color:#5a7299; margin-top:4px;'>{tp.tp3_reason}</div>
-          </div>
-          <div style='display:flex; justify-content:space-between; align-items:center;
-                      background:rgba(255,255,255,0.02); border-radius:8px; padding:8px 12px;'>
-            <div style='text-align:center;'>
-              <div style='font-size:10px; color:#5a7299;'>가중 R:R</div>
-              <div style='font-size:18px; font-weight:900; color:{wrr_c};'>{tp.weighted_rr:.2f} : 1</div>
-            </div>
-            <div style='text-align:center;'>
-              <div style='font-size:10px; color:#5a7299;'>최대 손실</div>
-              <div style='font-size:18px; font-weight:900; color:#ef4444;'>-{tp.max_loss_pct:.2f}%</div>
-            </div>
-            <div style='text-align:center;'>
-              <div style='font-size:10px; color:#5a7299;'>물량 배분</div>
-              <div style='font-size:12px; font-weight:700; color:#d8e8ff;'>{tp.tp1_qty}/{tp.tp2_qty}/{tp.tp3_qty}%</div>
-            </div>
-          </div>
-          <div style='font-size:11px; color:#5a7299; margin-top:8px; text-align:center;'>
-            💡 {tp.position_note}
-          </div>
-        </div>
+
+
+  <div class='card' style='border:1px solid rgba(6,182,212,0.3); background:linear-gradient(135deg,rgba(6,182,212,0.05),rgba(0,0,0,0));'>
+<div class='sec-title'>📋 매매 계획 (Minervini + O'Neil + PTJ + Livermore)</div>
+<div style='background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.25);
+border-radius:10px; padding:10px 14px; margin-bottom:8px;'>
+  <div style='display:flex; justify-content:space-between; align-items:center;'>
+<div>
+<div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>🎯 진입가</div>
+<div style='font-size:22px; font-weight:900; color:#06b6d4;'>{money(tp.entry_price)}</div>
+</div>
+<div style='text-align:right;'>
+<div style='font-size:11px; font-weight:700; color:{etype_c}; margin-bottom:3px;'>{tp.entry_type}</div>
+<div style='font-size:10px; color:#5a7299;'>1R = ${tp.risk_1r:.2f}</div>
+</div>
+  </div>
+  <div style='font-size:11px; color:#5a7299; margin-top:5px;'>{tp.entry_reason}</div>
+</div>
+<div style='background:rgba(239,68,68,0.07); border:1px solid rgba(239,68,68,0.25);
+border-radius:10px; padding:10px 14px; margin-bottom:8px;'>
+  <div style='display:flex; justify-content:space-between; align-items:center;'>
+<div>
+<div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>🛑 손절가</div>
+<div style='font-size:22px; font-weight:900; color:#ef4444;'>{money(tp.stop_price)}</div>
+</div>
+<div style='text-align:right;'>
+<div style='font-size:14px; font-weight:700; color:#ef4444;'>{tp.stop_pct:.2f}%</div>
+<div style='font-size:10px; color:#5a7299;'>O'Neil -7% 룰 적용</div>
+</div>
+  </div>
+  <div style='font-size:10px; color:#5a7299; margin-top:5px;'>{tp.stop_reason}</div>
+</div>
+<div style='background:rgba(34,197,94,0.06); border:1px solid rgba(34,197,94,0.2);
+border-radius:10px; padding:10px 14px; margin-bottom:6px;'>
+  <div style='display:flex; justify-content:space-between; align-items:center;'>
+<div>
+<div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>✅ 1차 익절 ({tp.tp1_qty}% 청산)</div>
+<div style='font-size:20px; font-weight:800; color:#22c55e;'>{money(tp.tp1_price)}</div>
+</div>
+<div style='text-align:right;'>
+<div style='font-size:13px; font-weight:700; color:#22c55e;'>{tp.tp1_pct:+.2f}%</div>
+<div style='font-size:11px; color:#5a7299;'>R:R {tp.rr1:.1f} : 1</div>
+</div>
+  </div>
+  <div style='font-size:10px; color:#5a7299; margin-top:4px;'>{tp.tp1_reason}</div>
+</div>
+<div style='background:rgba(34,197,94,0.09); border:1px solid rgba(34,197,94,0.3);
+border-radius:10px; padding:10px 14px; margin-bottom:6px;'>
+  <div style='display:flex; justify-content:space-between; align-items:center;'>
+<div>
+<div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>✅✅ 2차 익절 ({tp.tp2_qty}% 청산)</div>
+<div style='font-size:20px; font-weight:800; color:#22c55e;'>{money(tp.tp2_price)}</div>
+</div>
+<div style='text-align:right;'>
+<div style='font-size:13px; font-weight:700; color:#22c55e;'>{tp.tp2_pct:+.2f}%</div>
+<div style='font-size:11px; color:#5a7299;'>R:R {tp.rr2:.1f} : 1</div>
+</div>
+  </div>
+  <div style='font-size:10px; color:#5a7299; margin-top:4px;'>{tp.tp2_reason}</div>
+</div>
+<div style='background:rgba(6,182,212,0.08); border:1px solid rgba(6,182,212,0.3);
+border-radius:10px; padding:10px 14px; margin-bottom:8px;'>
+  <div style='display:flex; justify-content:space-between; align-items:center;'>
+<div>
+<div style='font-size:10px; color:#5a7299; font-weight:600; letter-spacing:0.1em;'>🚀 3차 익절 ({tp.tp3_qty}% 청산)</div>
+<div style='font-size:20px; font-weight:800; color:#06b6d4;'>{money(tp.tp3_price)}</div>
+</div>
+<div style='text-align:right;'>
+<div style='font-size:13px; font-weight:700; color:#06b6d4;'>{tp.tp3_pct:+.2f}%</div>
+<div style='font-size:11px; color:#5a7299;'>R:R {tp.rr3:.1f} : 1</div>
+</div>
+  </div>
+  <div style='font-size:10px; color:#5a7299; margin-top:4px;'>{tp.tp3_reason}</div>
+</div>
+<div style='display:flex; justify-content:space-between; align-items:center;
+background:rgba(255,255,255,0.02); border-radius:8px; padding:8px 12px;'>
+  <div style='text-align:center;'>
+<div style='font-size:10px; color:#5a7299;'>가중 R:R</div>
+<div style='font-size:18px; font-weight:900; color:{wrr_c};'>{tp.weighted_rr:.2f} : 1</div>
+  </div>
+  <div style='text-align:center;'>
+<div style='font-size:10px; color:#5a7299;'>최대 손실</div>
+<div style='font-size:18px; font-weight:900; color:#ef4444;'>-{tp.max_loss_pct:.2f}%</div>
+  </div>
+  <div style='text-align:center;'>
+<div style='font-size:10px; color:#5a7299;'>물량 배분</div>
+<div style='font-size:12px; font-weight:700; color:#d8e8ff;'>{tp.tp1_qty}/{tp.tp2_qty}/{tp.tp3_qty}%</div>
+  </div>
+</div>
+<div style='font-size:11px; color:#5a7299; margin-top:8px; text-align:center;'>
+  💡 {tp.position_note}
+</div>
+  </div>
+
+
         """, unsafe_allow_html=True)
 
         # Weinstein Stage
         ws = sc.weinstein
         stage_cls = {1:"stage-1",2:"stage-2",3:"stage-3",4:"stage-4"}.get(ws["stage"],"stage-1")
         st.markdown(f"""
-        <div class='{stage_cls}' style='margin-bottom:12px;'>
-          <div class='sec-title'>Weinstein Stage Analysis</div>
-          <div style='font-size:14px; font-weight:700;'>{ws['stage_name']}</div>
-          <div style='font-size:12px; color:#5a7299; margin-top:6px;'>
-            MA150 대비: {ws['distance_pct']:+.1f}% &nbsp;|&nbsp;
-            기울기: {"↑상승" if ws['ma150_slope']>0 else "↓하락" if ws['ma150_slope']<0 else "→횡보"}
-          </div>
-        </div>
+
+
+<div class='{stage_cls}' style='margin-bottom:12px;'>
+  <div class='sec-title'>Weinstein Stage Analysis</div>
+  <div style='font-size:14px; font-weight:700;'>{ws['stage_name']}</div>
+  <div style='font-size:12px; color:#5a7299; margin-top:6px;'>
+MA150 대비: {ws['distance_pct']:+.1f}% &nbsp;|&nbsp;
+기울기: {"↑상승" if ws['ma150_slope']>0 else "↓하락" if ws['ma150_slope']<0 else "→횡보"}
+  </div>
+</div>
+
+
         """, unsafe_allow_html=True)
 
         # Minervini TT
@@ -662,19 +694,23 @@ with _tab_chart:
             for lbl, ok in tt["conditions"]
         ])
         st.markdown(f"""
-        <div class='card'>
-          <div class='sec-title'>Minervini Trend Template</div>
-          <div style='display:flex; align-items:center; gap:10px; margin-bottom:10px;'>
-            <div style='font-size:28px; font-weight:900; color:{tt_color};'>{tt["passed"]}/8</div>
-            <div>
-              <div style='font-size:12px; font-weight:700; color:{tt_color};'>
-                {"✅ Stage 2 확인" if tt["is_stage2"] else ("⚡ 부분 적합" if tt["is_qualified"] else "❌ 미달")}
-              </div>
-              <div style='font-size:11px; color:#5a7299;'>12M 성과: {tt['perf12m']:+.1f}%</div>
-            </div>
-          </div>
-          {check_html}
-        </div>
+
+
+<div class='card'>
+  <div class='sec-title'>Minervini Trend Template</div>
+  <div style='display:flex; align-items:center; gap:10px; margin-bottom:10px;'>
+<div style='font-size:28px; font-weight:900; color:{tt_color};'>{tt["passed"]}/8</div>
+<div>
+  <div style='font-size:12px; font-weight:700; color:{tt_color};'>
+{"✅ Stage 2 확인" if tt["is_stage2"] else ("⚡ 부분 적합" if tt["is_qualified"] else "❌ 미달")}
+  </div>
+  <div style='font-size:11px; color:#5a7299;'>12M 성과: {tt['perf12m']:+.1f}%</div>
+</div>
+  </div>
+  {check_html}
+</div>
+
+
         """, unsafe_allow_html=True)
 
         # O'Neil RS
@@ -682,47 +718,55 @@ with _tab_chart:
         rs_c = "#22c55e" if rs["rs_score"]>=80 else ("#f59e0b" if rs["rs_score"]>=70 else "#ef4444")
         perfs = rs.get("perfs", {})
         st.markdown(f"""
-        <div class='card'>
-          <div class='sec-title'>O'Neil CANSLIM 분석</div>
-          <div style='display:flex; gap:12px; margin-bottom:10px; align-items:center;'>
-            <div style='text-align:center;'>
-              <div style='font-size:11px; color:#5a7299;'>RS Score</div>
-              <div style='font-size:26px; font-weight:900; color:{rs_c};'>{rs['rs_score']}</div>
-            </div>
-            <div style='flex:1;'>
-              <div style='font-size:12px; font-weight:600; color:{rs_c};'>{rs['momentum_rank']}</div>
-              <div style='font-size:11px; color:#5a7299; margin-top:3px;'>
-                3M: {f"{perfs.get('3M',0):+.1f}%" if perfs.get('3M') else "—"} &nbsp;
-                6M: {f"{perfs.get('6M',0):+.1f}%" if perfs.get('6M') else "—"} &nbsp;
-                12M: {f"{perfs.get('12M',0):+.1f}%" if perfs.get('12M') else "—"}
-              </div>
-            </div>
-          </div>
-          <div class='kv'><div class='k'>Cup-with-Handle</div>
-            <div class='v' style='color:{"#06b6d4" if cph["breakout"] else "#5a7299"};'>{cph['pattern']}</div></div>
-          <div class='kv'><div class='k'>컵 깊이</div>
-            <div class='v'>{cph['cup_depth_pct']}% {"✅" if 12<=cph['cup_depth_pct']<=35 else "⚠️"}</div></div>
-          <div class='kv'><div class='k'>거래량 배수</div>
-            <div class='v' style='color:{"#22c55e" if cph["vol_expansion"]>=1.5 else "#5a7299"};'>{cph['vol_expansion']}x</div></div>
-        </div>
+
+
+<div class='card'>
+  <div class='sec-title'>O'Neil CANSLIM 분석</div>
+  <div style='display:flex; gap:12px; margin-bottom:10px; align-items:center;'>
+<div style='text-align:center;'>
+  <div style='font-size:11px; color:#5a7299;'>RS Score</div>
+  <div style='font-size:26px; font-weight:900; color:{rs_c};'>{rs['rs_score']}</div>
+</div>
+<div style='flex:1;'>
+  <div style='font-size:12px; font-weight:600; color:{rs_c};'>{rs['momentum_rank']}</div>
+  <div style='font-size:11px; color:#5a7299; margin-top:3px;'>
+3M: {f"{perfs.get('3M',0):+.1f}%" if perfs.get('3M') else "—"} &nbsp;
+6M: {f"{perfs.get('6M',0):+.1f}%" if perfs.get('6M') else "—"} &nbsp;
+12M: {f"{perfs.get('12M',0):+.1f}%" if perfs.get('12M') else "—"}
+  </div>
+</div>
+  </div>
+  <div class='kv'><div class='k'>Cup-with-Handle</div>
+<div class='v' style='color:{"#06b6d4" if cph["breakout"] else "#5a7299"};'>{cph['pattern']}</div></div>
+  <div class='kv'><div class='k'>컵 깊이</div>
+<div class='v'>{cph['cup_depth_pct']}% {"✅" if 12<=cph['cup_depth_pct']<=35 else "⚠️"}</div></div>
+  <div class='kv'><div class='k'>거래량 배수</div>
+<div class='v' style='color:{"#22c55e" if cph["vol_expansion"]>=1.5 else "#5a7299"};'>{cph['vol_expansion']}x</div></div>
+</div>
+
+
         """, unsafe_allow_html=True)
 
         # Livermore 피벗
         pivs = sc.pivots
         st.markdown(f"""
-        <div class='card'>
-          <div class='sec-title'>Livermore 피벗 & 수급</div>
-          <div class='kv'><div class='k'>지지선</div><div class='v green'>{money(pivs.get('support',0))}</div></div>
-          <div class='kv'><div class='k'>저항선 (피벗)</div><div class='v red'>{money(pivs.get('resistance',0))}</div></div>
-          <div class='kv'><div class='k'>피벗 돌파 임박</div>
-            <div class='v' style='color:{"#06b6d4" if pivs.get("near_breakout") else "#5a7299"};'>{"🎯 임박!" if pivs.get("near_breakout") else "—"}</div></div>
-          <div class='kv'><div class='k'>골든크로스</div>
-            <div class='v' style='color:{"#22c55e" if sc.golden_cross else "#5a7299"};'>{"🌟 발생" if sc.golden_cross else "—"}</div></div>
-          <div class='kv'><div class='k'>데드크로스</div>
-            <div class='v' style='color:{"#ef4444" if sc.death_cross else "#5a7299"};'>{"💀 발생" if sc.death_cross else "—"}</div></div>
-          <div class='kv'><div class='k'>52주 위치</div>
-            <div class='v'>{sc.week52_pos*100:.0f}% (저: {money(sc.week52_l)} / 고: {money(sc.week52_h)})</div></div>
-        </div>
+
+
+<div class='card'>
+  <div class='sec-title'>Livermore 피벗 & 수급</div>
+  <div class='kv'><div class='k'>지지선</div><div class='v green'>{money(pivs.get('support',0))}</div></div>
+  <div class='kv'><div class='k'>저항선 (피벗)</div><div class='v red'>{money(pivs.get('resistance',0))}</div></div>
+  <div class='kv'><div class='k'>피벗 돌파 임박</div>
+<div class='v' style='color:{"#06b6d4" if pivs.get("near_breakout") else "#5a7299"};'>{"🎯 임박!" if pivs.get("near_breakout") else "—"}</div></div>
+  <div class='kv'><div class='k'>골든크로스</div>
+<div class='v' style='color:{"#22c55e" if sc.golden_cross else "#5a7299"};'>{"🌟 발생" if sc.golden_cross else "—"}</div></div>
+  <div class='kv'><div class='k'>데드크로스</div>
+<div class='v' style='color:{"#ef4444" if sc.death_cross else "#5a7299"};'>{"💀 발생" if sc.death_cross else "—"}</div></div>
+  <div class='kv'><div class='k'>52주 위치</div>
+<div class='v'>{sc.week52_pos*100:.0f}% (저: {money(sc.week52_l)} / 고: {money(sc.week52_h)})</div></div>
+</div>
+
+
         """, unsafe_allow_html=True)
 
         if sc.warnings:
@@ -737,7 +781,7 @@ with _tab_chart:
 # ══════════════════════════════════════════════════════════════════
 #  탭 2 — 빠른 티커 스캔 (등급별 분류)
 # ══════════════════════════════════════════════════════════════════
-with _tab_scan:
+with _tabs[1]:
 
     # 등급 색상 / 배경 정의
     GRADE_COLOR = {
@@ -939,66 +983,70 @@ with _tab_scan:
 
                     with cols3[idx % 3]:
                         st.markdown(f"""
-                        <div style='background:{gbg}; border:1px solid {gc}35;
-                                    border-radius:14px; padding:14px; margin-bottom:12px;'>
 
-                          <!-- 헤더 -->
-                          <div style='display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;'>
-                            <div>
-                              <div style='font-size:22px; font-weight:900; color:{gc}; letter-spacing:-0.03em;'>{r["ticker"]}</div>
-                              <div style='font-size:10px; color:{r["stage_c"]}; font-weight:700; margin-top:2px;'>{r["stage_lbl"]}</div>
-                              {f"<div style='font-size:10px; color:#5a7299; margin-top:2px;'>{badges}</div>" if badges else ""}
-                            </div>
-                            <div style='text-align:right;'>
-                              <div style='font-size:28px; font-weight:900; color:{gc}; line-height:1;'>{g}</div>
-                              <div style='font-size:12px; font-weight:700; color:{gc};'>{r["score"]}점</div>
-                            </div>
-                          </div>
 
-                          <!-- 시그널 -->
-                          <div style='background:rgba(0,0,0,0.18); border-radius:7px; padding:4px 10px;
-                                      font-size:12px; font-weight:700; color:{ac}; margin-bottom:8px;'>
-                            {r["action"]}
-                          </div>
+<div style='background:{gbg}; border:1px solid {gc}35;
+border-radius:14px; padding:14px; margin-bottom:12px;'>
 
-                          <!-- 지표 그리드 -->
-                          <div style='display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-bottom:8px;'>
-                            <div style='font-size:11px; color:#5a7299;'>TT <span style='color:#d8e8ff;font-weight:700;'>{r["tt"]}/8</span></div>
-                            <div style='font-size:11px; color:#5a7299;'>RS <span style='color:#d8e8ff;font-weight:700;'>{r["rs"]}</span></div>
-                            <div style='font-size:11px; color:#5a7299;'>RSI <span style='color:#d8e8ff;font-weight:700;'>{r["rsi"]:.0f}</span></div>
-                            <div style='font-size:11px; color:#5a7299;'>ADX <span style='color:#d8e8ff;font-weight:700;'>{r["adx"]:.0f}</span></div>
-                            <div style='font-size:11px; color:#5a7299;'>Vol <span style='color:#d8e8ff;font-weight:700;'>{r["vol_r"]:.2f}x</span></div>
-                            <div style='font-size:11px; color:{wc};'>{ws} <span style='font-weight:700;'>{abs(r["weekly"]):.1f}%</span></div>
-                          </div>
+  <!-- 헤더 -->
+  <div style='display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;'>
+<div>
+  <div style='font-size:22px; font-weight:900; color:{gc}; letter-spacing:-0.03em;'>{r["ticker"]}</div>
+  <div style='font-size:10px; color:{r["stage_c"]}; font-weight:700; margin-top:2px;'>{r["stage_lbl"]}</div>
+  {f"<div style='font-size:10px; color:#5a7299; margin-top:2px;'>{badges}</div>" if badges else ""}
+</div>
+<div style='text-align:right;'>
+  <div style='font-size:28px; font-weight:900; color:{gc}; line-height:1;'>{g}</div>
+  <div style='font-size:12px; font-weight:700; color:{gc};'>{r["score"]}점</div>
+</div>
+  </div>
 
-                          <!-- 매매 계획 -->
-                          <div style='border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;'>
-                            <div style='display:flex; justify-content:space-between; margin-bottom:4px;'>
-                              <span style='font-size:10px; color:#5a7299;'>진입가</span>
-                              <span style='font-size:11px; font-weight:700; color:#06b6d4;'>${r["entry"]:.2f}</span>
-                            </div>
-                            <div style='display:flex; justify-content:space-between; margin-bottom:4px;'>
-                              <span style='font-size:10px; color:#5a7299;'>🛑 손절</span>
-                              <span style='font-size:11px; font-weight:700; color:#ef4444;'>${r["stop"]:.2f} ({r["stop_pct"]:.1f}%)</span>
-                            </div>
-                            <div style='display:flex; justify-content:space-between; margin-bottom:2px;'>
-                              <span style='font-size:10px; color:#5a7299;'>✅ 1차 TP</span>
-                              <span style='font-size:11px; font-weight:600; color:#22c55e;'>${r["tp1"]:.2f} ({r["tp1_pct"]:+.1f}%)</span>
-                            </div>
-                            <div style='display:flex; justify-content:space-between; margin-bottom:2px;'>
-                              <span style='font-size:10px; color:#5a7299;'>✅ 2차 TP</span>
-                              <span style='font-size:11px; font-weight:600; color:#22c55e;'>${r["tp2"]:.2f} ({r["tp2_pct"]:+.1f}%)</span>
-                            </div>
-                            <div style='display:flex; justify-content:space-between; margin-bottom:6px;'>
-                              <span style='font-size:10px; color:#5a7299;'>🚀 3차 TP</span>
-                              <span style='font-size:11px; font-weight:700; color:#06b6d4;'>${r["tp3"]:.2f} ({r["tp3_pct"]:+.1f}%)</span>
-                            </div>
-                            <div style='display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px;'>
-                              <span style='font-size:10px; color:#5a7299;'>가중 R:R</span>
-                              <span style='font-size:13px; font-weight:900; color:{wrrc};'>{r["wrr"]:.1f} : 1</span>
-                            </div>
-                          </div>
-                        </div>
+  <!-- 시그널 -->
+  <div style='background:rgba(0,0,0,0.18); border-radius:7px; padding:4px 10px;
+  font-size:12px; font-weight:700; color:{ac}; margin-bottom:8px;'>
+{r["action"]}
+  </div>
+
+  <!-- 지표 그리드 -->
+  <div style='display:grid; grid-template-columns:1fr 1fr; gap:3px; margin-bottom:8px;'>
+<div style='font-size:11px; color:#5a7299;'>TT <span style='color:#d8e8ff;font-weight:700;'>{r["tt"]}/8</span></div>
+<div style='font-size:11px; color:#5a7299;'>RS <span style='color:#d8e8ff;font-weight:700;'>{r["rs"]}</span></div>
+<div style='font-size:11px; color:#5a7299;'>RSI <span style='color:#d8e8ff;font-weight:700;'>{r["rsi"]:.0f}</span></div>
+<div style='font-size:11px; color:#5a7299;'>ADX <span style='color:#d8e8ff;font-weight:700;'>{r["adx"]:.0f}</span></div>
+<div style='font-size:11px; color:#5a7299;'>Vol <span style='color:#d8e8ff;font-weight:700;'>{r["vol_r"]:.2f}x</span></div>
+<div style='font-size:11px; color:{wc};'>{ws} <span style='font-weight:700;'>{abs(r["weekly"]):.1f}%</span></div>
+  </div>
+
+  <!-- 매매 계획 -->
+  <div style='border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;'>
+<div style='display:flex; justify-content:space-between; margin-bottom:4px;'>
+  <span style='font-size:10px; color:#5a7299;'>진입가</span>
+  <span style='font-size:11px; font-weight:700; color:#06b6d4;'>${r["entry"]:.2f}</span>
+</div>
+<div style='display:flex; justify-content:space-between; margin-bottom:4px;'>
+  <span style='font-size:10px; color:#5a7299;'>🛑 손절</span>
+  <span style='font-size:11px; font-weight:700; color:#ef4444;'>${r["stop"]:.2f} ({r["stop_pct"]:.1f}%)</span>
+</div>
+<div style='display:flex; justify-content:space-between; margin-bottom:2px;'>
+  <span style='font-size:10px; color:#5a7299;'>✅ 1차 TP</span>
+  <span style='font-size:11px; font-weight:600; color:#22c55e;'>${r["tp1"]:.2f} ({r["tp1_pct"]:+.1f}%)</span>
+</div>
+<div style='display:flex; justify-content:space-between; margin-bottom:2px;'>
+  <span style='font-size:10px; color:#5a7299;'>✅ 2차 TP</span>
+  <span style='font-size:11px; font-weight:600; color:#22c55e;'>${r["tp2"]:.2f} ({r["tp2_pct"]:+.1f}%)</span>
+</div>
+<div style='display:flex; justify-content:space-between; margin-bottom:6px;'>
+  <span style='font-size:10px; color:#5a7299;'>🚀 3차 TP</span>
+  <span style='font-size:11px; font-weight:700; color:#06b6d4;'>${r["tp3"]:.2f} ({r["tp3_pct"]:+.1f}%)</span>
+</div>
+<div style='display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px;'>
+  <span style='font-size:10px; color:#5a7299;'>가중 R:R</span>
+  <span style='font-size:13px; font-weight:900; color:{wrrc};'>{r["wrr"]:.1f} : 1</span>
+</div>
+  </div>
+</div>
+
+
                         """, unsafe_allow_html=True)
 
             # 각 등급별 탭 렌더링
