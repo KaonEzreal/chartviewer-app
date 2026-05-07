@@ -18,7 +18,7 @@ from core.signal import (
     V2_MIN_SCORE_S, V2_MIN_SCORE_A, V2_MIN_RS, V2_MIN_ADX,
 )
 
-st.set_page_config(page_title="StockEdge Pro", page_icon="📈",
+st.set_page_config(page_title="Trader_TM", page_icon="📈",
                    layout="wide", initial_sidebar_state="collapsed")
 
 st.markdown("""
@@ -201,7 +201,7 @@ def make_chart(df, ticker, tf_choice, sig):
 st.markdown("""
 <div class='app-header'>
 <div>
-<div class='app-title'>📈 StockEdge Pro</div>
+<div class='app-title'>📈 Trader_TM</div>
 <div class='app-sub'>
 <span class='trader-badge tb-min'>Minervini</span>
 <span class='trader-badge tb-wei'>Weinstein</span>
