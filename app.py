@@ -597,21 +597,22 @@ with _tabs[1]:
     GRADE_BG={"SSS":"rgba(6,182,212,0.13)","SS":"rgba(6,182,212,0.09)","S":"rgba(34,197,94,0.10)","A":"rgba(74,222,128,0.07)","B":"rgba(245,158,11,0.08)","C":"rgba(249,115,22,0.07)","D":"rgba(239,68,68,0.06)"}
     GRADE_ORDER=["SSS","SS","S","A","B","C","D"]
     PRESETS={
-        "🔥 AI·반도체":    "NVDA,AMD,AVGO,QCOM,ARM,MRVL,TSM,AMAT,LRCX,KLAC,MU,SMCI,ASML,INTC,MCHP,MPWR,ON",
-        "💻 빅테크":        "AAPL,MSFT,GOOG,AMZN,META,NFLX,CRM,ORCL,ADBE,IBM,NOW,INTU,WDAY,TEAM",
-        "⚡ 에너지·원전":   "SMR,NNE,CEG,VST,ETR,NRG,IREN,FSLR,ENPH,CLNE,NEE,AES,PCG,EXC",
-        "🚀 고성장주":      "PLTR,AXON,CRWD,ZS,DDOG,SNOW,NET,ABNB,UBER,MSTR,AFRM,BILL,TTD",
-        "💊 헬스케어":      "LLY,NVO,ABBV,JNJ,UNH,MRNA,PFE,AMGN,GILD,REGN,ISRG,BSX,DXCM",
-        "🏦 금융·핀테크":   "JPM,BAC,GS,MS,BLK,V,MA,PYPL,SQ,COIN,HOOD,SOFI,NU",
-        "🛡️ 사이버보안":    "CRWD,ZS,PANW,FTNT,S,OKTA,CYBR,QLYS,TENB,DDOG",
-        "🤖 AI 소프트웨어": "PLTR,AI,PATH,BBAI,SOUN,GTLB,MNDY,ASAN,TTD,CELH",
-        "🎮 소비·엔터":     "TSLA,DIS,ABNB,BKNG,CMG,MCD,SBUX,NKE,LULU,RBLX,SPOT",
-        "📦 내 위시리스트":  "NVDA,TSLA,MSFT,AAPL,AMZN,META,GOOG,PLTR,SMR,IREN,AXON,CRWD,MSTR,SNOW,NET,AMD,ARM,AVGO,LLY,V",
+        "🔥 AI·반도체 (30종)":  "NVDA,AMD,AVGO,QCOM,ARM,MRVL,TSM,AMAT,LRCX,KLAC,MU,SMCI,ASML,INTC,MCHP,MPWR,ON,WOLF,AMBA,CRUS,SWKS,NXPI,ENTG,ONTO,ACLS,MKSI,ICHR,KLIC,COHU,FORM",
+        "💻 빅테크 (25종)":     "AAPL,MSFT,GOOG,AMZN,META,NFLX,CRM,ORCL,ADBE,IBM,NOW,INTU,WDAY,TEAM,ZM,DOCU,OKTA,HUBS,TWLO,DDOG,MDB,ESTC,CFLT,GTLB,VEEV",
+        "⚡ 에너지·원전 (25종)": "SMR,NNE,CEG,VST,ETR,NRG,IREN,FSLR,ENPH,CLNE,NEE,AES,PCG,EXC,DTE,PPL,SO,D,XEL,OKE,LNG,AR,EQT,CTRA,FANG",
+        "🚀 고성장주 (30종)":    "PLTR,AXON,CRWD,ZS,DDOG,SNOW,NET,ABNB,UBER,MSTR,AFRM,BILL,TTD,RBRK,IOT,SAMSARA,GTLB,GLBE,MNDY,ASAN,APP,APPLOVIN,IBOTTA,DUOL,CELH,WING,ELF,BROS,CAVA,RXRX",
+        "💊 헬스케어 (25종)":    "LLY,NVO,ABBV,JNJ,UNH,MRNA,PFE,AMGN,GILD,REGN,ISRG,BSX,DXCM,INSP,NTRA,RARE,EXAS,PGNY,ACAD,IONS,ARWR,ALNY,BMRN,SRPT,PTGX",
+        "🏦 금융·핀테크 (25종)": "JPM,BAC,GS,MS,BLK,V,MA,PYPL,SQ,COIN,HOOD,SOFI,NU,AFRM,UPST,LC,MARA,RIOT,CORZ,HUT,CLSK,IREN,WBTC,SEZL,DAVE",
+        "🛡️ 사이버보안 (20종)":  "CRWD,ZS,PANW,FTNT,S,OKTA,CYBR,QLYS,TENB,RPD,VRNS,DDOG,ESTC,SIEM,SUMO,CYBE,HACK,CFIX,SFHG,EVTL",
+        "🤖 AI 소프트웨어 (20종)":"PLTR,AI,PATH,BBAI,SOUN,GTLB,MNDY,ASAN,TTD,CELH,HIMS,IONQ,QUBT,RGTI,QBTS,ARQQ,BFLY,OUST,LIDR,AEVA",
+        "🎮 소비·엔터 (25종)":   "TSLA,DIS,ABNB,BKNG,CMG,MCD,SBUX,NKE,LULU,RBLX,SPOT,SNAP,PINS,MTCH,MGM,LVS,WYNN,PENN,DKNG,FLUT,EXPE,TRIP,LYFT,DASH,CART",
+        "📦 전체 통합 (100종)":  "NVDA,AMD,AVGO,QCOM,ARM,MRVL,AMAT,LRCX,KLAC,MU,AAPL,MSFT,GOOG,AMZN,META,NFLX,CRM,ADBE,NOW,INTU,PLTR,AXON,CRWD,ZS,DDOG,SNOW,NET,UBER,ABNB,MSTR,LLY,NVO,ABBV,UNH,ISRG,REGN,GILD,JPM,BAC,GS,V,MA,COIN,PYPL,SMR,NNE,CEG,VST,IREN,FSLR,ENPH,PANW,FTNT,OKTA,CYBR,TTWO,DIS,SPOT,RBLX,CELH,WING,CAVA,APP,TTD,BILL,AFRM,MNDY,GTLB,GLBE,IOT,RXRX,TSLA,MSFT,WDAY,MDB,ESTC,HUBS,BSX,DXCM,INSP,BLK,MS,SOFI,NU,MARA,LNG,EQT,AR,MRNA,PFE,AMGN,NXPI,MCHP,ON,INTC,SMCI,ASML,WBTC,SOUN,BBAI,PATH,AI,IONQ,QUBT",
+        "⭐ 내 위시리스트":       "NVDA,TSLA,MSFT,AAPL,AMZN,META,GOOG,PLTR,SMR,IREN,AXON,CRWD,MSTR,SNOW,NET,AMD,ARM,AVGO,LLY,V",
     }
     st.markdown("""
 <div style='margin-bottom:14px;'>
 <div style='font-size:15px;font-weight:800;color:#d8e8ff;margin-bottom:4px;'>종목 스캔 → 등급 + v2 조건 충족률 + 매수 추천</div>
-<div style='font-size:11px;color:#5a7299;'>최대 100종목 · X/9 조건 충족 + 추천등급 + 손절/익절/트레일링</div>
+<div style='font-size:11px;color:#5a7299;'>최대 150종목 · 전체 통합 100종목 포함 · X/9 조건 충족 + 추천등급 + 손절/익절/트레일링</div>
 </div>""", unsafe_allow_html=True)
     r1c1,r1c2,r1c3=st.columns([2,1.2,1.2])
     with r1c1: sc_preset=st.selectbox("📂 프리셋",list(PRESETS.keys()),key="sc_preset")
@@ -623,7 +624,7 @@ with _tabs[1]:
         if sc_custom.strip()
         else [t.strip().upper() for t in PRESETS[sc_preset].split(",") if t.strip()]
     )
-    sc_tickers=list(dict.fromkeys(sc_tickers))[:100]
+    sc_tickers=list(dict.fromkeys(sc_tickers))[:150]
     bc1,bc2=st.columns([1,4])
     with bc1: do_scan=st.button("🚀 스캔 시작",use_container_width=True,key="sc_run")
     with bc2: st.markdown(f"<div style='padding:9px 0;font-size:12px;color:#5a7299;'>분석 대상: <b style='color:#d8e8ff;'>{len(sc_tickers)}종목</b></div>",unsafe_allow_html=True)
@@ -783,16 +784,17 @@ with _tabs[2]:
 </div>
 </div>""", unsafe_allow_html=True)
     PERFECT_PRESETS={
-        "🔥 AI·반도체":"NVDA,AMD,AVGO,QCOM,ARM,MRVL,TSM,AMAT,LRCX,KLAC,MU,SMCI,ASML,INTC,MCHP,MPWR,ON",
-        "💻 빅테크":"AAPL,MSFT,GOOG,AMZN,META,NFLX,CRM,ORCL,ADBE,IBM,NOW,INTU,WDAY,TEAM",
-        "⚡ 에너지·원전":"SMR,NNE,CEG,VST,ETR,NRG,IREN,FSLR,ENPH,CLNE,NEE,AES,PCG,EXC",
-        "🚀 고성장주":"PLTR,AXON,CRWD,ZS,DDOG,SNOW,NET,ABNB,UBER,MSTR,AFRM,BILL,TTD",
-        "💊 헬스케어":"LLY,NVO,ABBV,JNJ,UNH,MRNA,PFE,AMGN,GILD,REGN,ISRG,BSX,DXCM",
-        "🏦 금융·핀테크":"JPM,BAC,GS,MS,BLK,V,MA,PYPL,SQ,COIN,HOOD,SOFI,NU",
-        "🛡️ 사이버보안":"CRWD,ZS,PANW,FTNT,S,OKTA,CYBR,QLYS,TENB,DDOG",
-        "🤖 AI 소프트웨어":"PLTR,AI,PATH,BBAI,SOUN,GTLB,MNDY,ASAN,TTD,CELH",
-        "🎮 소비·엔터":"TSLA,DIS,ABNB,BKNG,CMG,MCD,SBUX,NKE,LULU,RBLX,SPOT",
-        "📦 전체 유니버스":"NVDA,AMD,AVGO,QCOM,ARM,AMAT,LRCX,KLAC,MU,AAPL,MSFT,GOOG,AMZN,META,NFLX,CRM,ADBE,PLTR,CRWD,AXON,NET,DDOG,SNOW,UBER,ABNB,TSLA,SMR,LLY,V,MA,JPM,GS,PANW,FTNT,ZS,TTD,MSTR,COIN,NOW,INTU",
+        "🔥 AI·반도체 (30종)":  "NVDA,AMD,AVGO,QCOM,ARM,MRVL,TSM,AMAT,LRCX,KLAC,MU,SMCI,ASML,INTC,MCHP,MPWR,ON,WOLF,AMBA,CRUS,SWKS,NXPI,ENTG,ONTO,ACLS,MKSI,ICHR,KLIC,COHU,FORM",
+        "💻 빅테크 (25종)":     "AAPL,MSFT,GOOG,AMZN,META,NFLX,CRM,ORCL,ADBE,IBM,NOW,INTU,WDAY,TEAM,ZM,DOCU,OKTA,HUBS,TWLO,DDOG,MDB,ESTC,CFLT,GTLB,VEEV",
+        "⚡ 에너지·원전 (25종)": "SMR,NNE,CEG,VST,ETR,NRG,IREN,FSLR,ENPH,CLNE,NEE,AES,PCG,EXC,DTE,PPL,SO,D,XEL,OKE,LNG,AR,EQT,CTRA,FANG",
+        "🚀 고성장주 (30종)":    "PLTR,AXON,CRWD,ZS,DDOG,SNOW,NET,ABNB,UBER,MSTR,AFRM,BILL,TTD,RBRK,IOT,GTLB,GLBE,MNDY,ASAN,APP,DUOL,CELH,WING,ELF,BROS,CAVA,RXRX,HIMS,IBOTTA,SAMSARA",
+        "💊 헬스케어 (25종)":    "LLY,NVO,ABBV,JNJ,UNH,MRNA,PFE,AMGN,GILD,REGN,ISRG,BSX,DXCM,INSP,NTRA,RARE,EXAS,PGNY,ACAD,IONS,ARWR,ALNY,BMRN,SRPT,PTGX",
+        "🏦 금융·핀테크 (25종)": "JPM,BAC,GS,MS,BLK,V,MA,PYPL,SQ,COIN,HOOD,SOFI,NU,AFRM,UPST,LC,MARA,RIOT,CORZ,HUT,CLSK,IREN,SEZL,DAVE,FLUT",
+        "🛡️ 사이버보안 (20종)":  "CRWD,ZS,PANW,FTNT,S,OKTA,CYBR,QLYS,TENB,RPD,VRNS,DDOG,ESTC,NET,SIEM,SUMO,SentinelOne,HACK,CFIX,SFHG",
+        "🤖 AI 소프트웨어 (20종)":"PLTR,AI,PATH,BBAI,SOUN,GTLB,MNDY,ASAN,TTD,CELH,HIMS,IONQ,QUBT,RGTI,QBTS,ARQQ,BFLY,OUST,LIDR,AEVA",
+        "🎮 소비·엔터 (25종)":   "TSLA,DIS,ABNB,BKNG,CMG,MCD,SBUX,NKE,LULU,RBLX,SPOT,SNAP,PINS,MTCH,MGM,LVS,WYNN,PENN,DKNG,FLUT,EXPE,LYFT,DASH,CART,DUOL",
+        "📦 전체 통합 (100종)":  "NVDA,AMD,AVGO,QCOM,ARM,MRVL,AMAT,LRCX,KLAC,MU,AAPL,MSFT,GOOG,AMZN,META,NFLX,CRM,ADBE,NOW,INTU,PLTR,AXON,CRWD,ZS,DDOG,SNOW,NET,UBER,ABNB,MSTR,LLY,NVO,ABBV,UNH,ISRG,REGN,GILD,JPM,BAC,GS,V,MA,COIN,PYPL,SMR,NNE,CEG,VST,IREN,FSLR,ENPH,PANW,FTNT,OKTA,CYBR,DIS,SPOT,RBLX,CELH,WING,CAVA,APP,TTD,BILL,AFRM,MNDY,GTLB,GLBE,IOT,RXRX,TSLA,WDAY,MDB,ESTC,HUBS,BSX,DXCM,INSP,BLK,MS,SOFI,NU,MARA,LNG,EQT,AR,MRNA,PFE,AMGN,NXPI,MCHP,ON,INTC,SMCI,ASML,SOUN,BBAI,PATH,AI,IONQ,QUBT,HIMS,DUOL",
+        "⭐ 내 위시리스트":       "NVDA,TSLA,MSFT,AAPL,AMZN,META,GOOG,PLTR,SMR,IREN,AXON,CRWD,MSTR,SNOW,NET,AMD,ARM,AVGO,LLY,V",
     }
     pf_c1,pf_c2,pf_c3=st.columns([2,1.2,1])
     with pf_c1: pf_preset=st.selectbox("📂 스캔 대상",list(PERFECT_PRESETS.keys()),key="pf_preset")
@@ -804,11 +806,11 @@ with _tabs[2]:
         if pf_custom.strip()
         else [t.strip().upper() for t in PERFECT_PRESETS[pf_preset].split(",") if t.strip()]
     )
-    pf_tickers=list(dict.fromkeys(pf_tickers))[:80]
+    pf_tickers=list(dict.fromkeys(pf_tickers))[:150]
     pf_min_tt_num={"6/8 이상":6,"7/8 이상":7,"8/8 만점":8}[pf_min_tt]
     pb1,pb2=st.columns([1,4])
     with pb1: pf_run=st.button("🎯 찾기 시작",use_container_width=True,key="pf_run")
-    with pb2: st.markdown(f"<div style='padding:9px 0;font-size:12px;color:#5a7299;'>스캔 <b style='color:#d8e8ff;'>{len(pf_tickers)}종목</b> → <b style='color:#06b6d4;'>9/9 + TT {pf_min_tt} + Stage2 동시 충족만 추출</b></div>",unsafe_allow_html=True)
+    with pb2: st.markdown(f"<div style='padding:9px 0;font-size:12px;color:#5a7299;'>스캔 <b style='color:#d8e8ff;'>{len(pf_tickers)}종목</b> (전체통합 100종 포함) → <b style='color:#06b6d4;'>9/9 + TT {pf_min_tt} + Stage2 동시 충족만 추출</b></div>",unsafe_allow_html=True)
     if pf_run:
         perfect=[]; near=[]
         pf_bar=st.progress(0); pf_stat=st.empty()
