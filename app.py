@@ -109,7 +109,7 @@ def safe_mfi(v):
     try:
         f=float(v)
         return 50.0 if math.isnan(f) else f
-    except: return 50.0
+    except Exception: return 50.0
 
 def build_checklist_html(conds):
     html = ""
@@ -249,7 +249,7 @@ with _tabs[0]:
         _t = _now.time()
         _market_open = (_now.weekday() < 5 and
                         _dt.time(9,25) <= _t <= _dt.time(16,5))
-    except: pass
+    except Exception: pass
 
     _side1, _side2, _side3 = st.columns([1.2, 1, 2])
     with _side1:
@@ -300,11 +300,20 @@ with _tabs[0]:
 <div style='margin-left:auto;font-size:10px;color:#5a7299;'>{_rt.get("time","")}</div>
 </div>""", unsafe_allow_html=True)
 
-    # ── 자동갱신 (장중 30초) ─────────────────────────────────────
+    # ── 자동갱신 (장중) — time.sleep 블로킹 제거, rerun 주기 타이머 방식 ─
     if _auto and _market_open:
         import time as _time
-        _time.sleep(30)
-        st.rerun()
+        # session_state로 마지막 갱신 시각 추적
+        _now_ts = _time.time()
+        if "last_refresh" not in st.session_state:
+            st.session_state["last_refresh"] = _now_ts
+        _elapsed = _now_ts - st.session_state.get("last_refresh", 0)
+        if _elapsed >= 30:
+            st.session_state["last_refresh"] = _now_ts
+            st.rerun()
+        else:
+            _remaining = int(30 - _elapsed)
+            st.caption(f"⚡ 자동갱신 대기 중... {_remaining}초 후 갱신")
 
     if sig.vix_text:
         vv=sig.vix or 0
@@ -711,7 +720,7 @@ with _tabs[1]:
                     "fake_breakout":s.sc.fake_breakout,"close_above_pivot":s.sc.close_above_pivot,
                     "is_perfect_vcp":s.sc.is_perfect_vcp,"vcp_score":s.sc.vcp_score,
                 })
-            except: continue
+            except Exception: continue
         bar.empty(); stat.empty()
         if not results:
             st.warning("스캔 결과가 없습니다.")
@@ -831,7 +840,7 @@ with _tabs[2]:
         try:
             spy_res=build_signal("SPY","스윙","스윙 (1D)")
             spy_bias=spy_res[0].bias if spy_res else "알수없음"
-        except: spy_bias="알수없음"
+        except Exception: spy_bias="알수없음"
     spy_c={"상승장":"#22c55e","횡보장":"#f59e0b","하락장":"#ef4444"}.get(spy_bias,"#5a7299")
     spy_warn=spy_bias!="상승장"
     st.markdown(f"""
@@ -885,7 +894,7 @@ with _tabs[2]:
                 row={"ticker":tk,"score":s.sc.total,"grade":s.sc.grade,"cond_passed":pc,"cond_total":tc,"tt_passed":tt_passed,"stage":stage,"tt_conds":s.sc.trend_template["conditions"],"perf12m":s.sc.trend_template["perf12m"],"rs":s.sc.rs["rs_score"],"rsi":s.sc.rsi_val,"adx":s.sc.adx_val,"vol_r":s.sc.vol_ratio,"vcp":s.sc.vcp["breakout_ready"],"vcp_det":s.sc.vcp["detected"],"golden":s.sc.golden_cross,"squeeze":s.sc.bb_squeeze,"bias":s.bias,"weekly":s.weekly_perf,"entry":tp2.entry_price,"stop":tp2.stop_price,"stop_pct":tp2.stop_pct,"tp1":tp2.tp1_price,"tp1_pct":tp2.tp1_pct,"trail_pct":tp2.trail_pct,"be_trigger":tp2.be_trigger,"be_stop":tp2.be_stop,"weighted_rr":tp2.weighted_rr,"rec_label":rl}
                 if pc==tc and tt_passed>=pf_min_tt_num and stage==2: perfect.append(row)
                 elif pc>=tc-1 and tt_passed>=pf_min_tt_num-1 and stage==2: near.append(row)
-            except: continue
+            except Exception: continue
         pf_bar.empty(); pf_stat.empty()
         st.markdown(f"""
 <div style='background:linear-gradient(135deg,rgba(6,182,212,0.1),rgba(34,197,94,0.05));border:1px solid rgba(6,182,212,0.3);border-radius:14px;padding:16px 20px;margin-bottom:16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;text-align:center;'>
@@ -1084,6 +1093,61 @@ TT 6/8 이상 선택<br>
 </div>
 </div>
 </div>""", unsafe_allow_html=True)
+
+
+    # 🔢 인터랙티브 포지션 사이즈 계산기
+    st.markdown(
+        "<div style='font-size:13px;font-weight:800;color:#3b82f6;margin:14px 0 8px;'>"
+        "🔢 포지션 사이즈 계산기 — 바로 입력해서 매수 수량 확인</div>",
+        unsafe_allow_html=True
+    )
+    _pc1, _pc2, _pc3, _pc4 = st.columns(4)
+    with _pc1: _acc   = st.number_input("💰 계좌 ($)", value=10000, step=1000, min_value=100, key="calc_acc")
+    with _pc2: _risk  = st.number_input("리스크 (%)", value=1.5, step=0.5, min_value=0.5, max_value=5.0, key="calc_risk")
+    with _pc3: _entry = st.number_input("진입가 ($)", value=100.0, step=1.0, min_value=0.01, key="calc_entry")
+    with _pc4: _stop  = st.number_input("손절가 ($)", value=92.0, step=1.0, min_value=0.01, key="calc_stop")
+
+    if _entry > _stop > 0 and _acc > 0:
+        _risk_amt     = _acc * (_risk / 100)
+        _loss_per     = _entry - _stop
+        _shares_calc  = int(_risk_amt / _loss_per) if _loss_per > 0 else 0
+        _max_shares   = int(_acc * 0.10 / _entry)
+        _shares_final = min(_shares_calc, _max_shares)
+        _total_final  = _shares_final * _entry
+        _max_loss     = _shares_final * _loss_per
+        _stop_pct_val = (_stop / _entry - 1) * 100
+        _tp1_price_v  = round(_entry * 1.18, 2)
+        _tp1_profit   = _shares_final // 2 * (_tp1_price_v - _entry)
+        _acct_pct     = _total_final / _acc * 100
+        _capped       = _shares_final < _shares_calc
+
+        _ca, _cb, _cc, _cd = st.columns(4)
+        with _ca: st.markdown(
+            f"<div style='background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:10px;padding:12px;text-align:center;'>"
+            f"<div style='font-size:10px;color:#5a7299;'>매수 수량</div>"
+            f"<div style='font-size:24px;font-weight:900;color:#06b6d4;'>{_shares_final}주</div>"
+            f"<div style='font-size:10px;color:#5a7299;'>{'⚠️ 10%한도 적용' if _capped else '✅ 계산값'}</div></div>",
+            unsafe_allow_html=True)
+        with _cb: st.markdown(
+            f"<div style='background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:12px;text-align:center;'>"
+            f"<div style='font-size:10px;color:#5a7299;'>최대 손실</div>"
+            f"<div style='font-size:20px;font-weight:900;color:#ef4444;'>${_max_loss:,.0f}</div>"
+            f"<div style='font-size:10px;color:#ef4444;'>손절 {_stop_pct_val:.1f}%</div></div>",
+            unsafe_allow_html=True)
+        with _cc: st.markdown(
+            f"<div style='background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.25);border-radius:10px;padding:12px;text-align:center;'>"
+            f"<div style='font-size:10px;color:#5a7299;'>1차익절 +18%</div>"
+            f"<div style='font-size:20px;font-weight:900;color:#22c55e;'>${_tp1_price_v:.2f}</div>"
+            f"<div style='font-size:10px;color:#22c55e;'>수익 +${_tp1_profit:,.0f}</div></div>",
+            unsafe_allow_html=True)
+        with _cd: st.markdown(
+            f"<div style='background:rgba(255,255,255,0.03);border:1px solid #1e3a5f;border-radius:10px;padding:12px;text-align:center;'>"
+            f"<div style='font-size:10px;color:#5a7299;'>총 투자금</div>"
+            f"<div style='font-size:20px;font-weight:900;color:#d8e8ff;'>${_total_final:,.0f}</div>"
+            f"<div style='font-size:10px;color:#5a7299;'>계좌의 {_acct_pct:.1f}%</div></div>",
+            unsafe_allow_html=True)
+    else:
+        st.info("진입가 > 손절가 조건을 확인하세요.")
 
     # ── PHASE 4: 손절 관리 ───────────────────────────────────────
     st.markdown("""
