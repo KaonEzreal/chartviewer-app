@@ -194,15 +194,20 @@ def calc_entry_conditions(sc: MasterScorecard, bias: str) -> List[EntryCondition
     ))
 
     # 8. VCP / BB수축
-    vcp_r = sc.vcp["breakout_ready"]
-    vcp_d = sc.vcp["detected"]
-    bb_sq = sc.bb_squeeze
+    vcp_r     = sc.vcp["breakout_ready"]
+    vcp_d     = sc.vcp["detected"]
+    bb_sq     = sc.bb_squeeze
+    perf_vcp  = sc.is_perfect_vcp
+    vcp_sc    = sc.vcp_score
     conds.append(EntryCondition(
         name="VCP / BB수축 셋업",
-        passed=vcp_r or vcp_d or bb_sq,
-        current="🚀VCP준비" if vcp_r else ("⚡VCP진행" if vcp_d else ("⚡BB수축" if bb_sq else "미감지")),
-        required="VCP 또는 BB수축 감지",
-        meaning="Minervini VCP(변동성 수축 패턴). 큰 상승 직전 눌림 패턴. 있으면 신뢰도↑.",
+        passed=perf_vcp or vcp_r or vcp_d or bb_sq,
+        current=(f"🔥VCP완전체({vcp_sc}/10)" if perf_vcp
+                 else "🚀VCP돌파준비" if vcp_r
+                 else "⚡VCP진행중" if vcp_d
+                 else "⚡BB수축" if bb_sq else "미감지"),
+        required="VCP 감지 또는 BB수축 (완전체 = 거래량+돌파확인+기관 동시)",
+        meaning=f"Minervini VCP 패턴. 점수 {vcp_sc}/10. 완전체(10점)일수록 백테스트 성과 높음.",
         importance="medium",
     ))
 
@@ -290,7 +295,12 @@ def build_trade_plan(df: pd.DataFrame, sc: MasterScorecard,
     # 실제 청산가는 시장 움직임에 따라 달라짐
 
     # ── 가중 R:R (1차 50% + 트레일링 50% 평균 2.5R 가정) ─────────
-    weighted_rr = round(rr1 * 0.5 + 2.5 * 0.5, 2)
+    # weighted_rr: 1차 50%(rr1) + 잔량 50%(트레일링으로 추가 수익)
+    # 트레일링 잔량의 기대 R:R = (trail_pct 반비례) 
+    # 타이트한 트레일(SS:8%) = 빨리 청산 가능성, 느슨한(A:12%) = 더 오래 보유
+    trail_rr_estimate = round(1.0 / trail_pct, 1)  # 8%→12.5R, 10%→10R, 12%→8.3R (이론값)
+    trail_rr_capped   = min(trail_rr_estimate, 5.0)  # 현실적 5R 캡
+    weighted_rr = round(rr1 * 0.5 + trail_rr_capped * 0.5, 2)
 
     # ── 포지션 사이즈 ────────────────────────────────────────────
     if abs(stop_pct) > 7:
@@ -379,8 +389,18 @@ def build_signal(ticker: str, style: str,
     ma50  = float(sma(close, 50).iloc[-1])
     ma200 = float(sma(close, min(200, len(df))).iloc[-1])
 
-    bias = ("상승장" if last > ma50 > ma200 else
-            "하락장" if last < ma50 < ma200 else "횡보장")
+    # ── 시장 국면: 종목 자체 MA가 아닌 SPY MA 기준으로 판단 ─────
+    if not spy_df.empty and len(spy_df) >= 50:
+        spy_close  = spy_df["Close"]
+        spy_last   = float(spy_close.iloc[-1])
+        spy_ma50   = float(sma(spy_close, 50).iloc[-1])
+        spy_ma200  = float(sma(spy_close, min(200, len(spy_df))).iloc[-1])
+        bias = ("상승장" if spy_last > spy_ma50 > spy_ma200 else
+                "하락장" if spy_last < spy_ma50 and spy_last < spy_ma200 else "횡보장")
+    else:
+        # SPY 데이터 없으면 종목 자체 기준 폴백
+        bias = ("상승장" if last > ma50 > ma200 else
+                "하락장" if last < ma50 < ma200 else "횡보장")
 
     interval = tf["interval"]
     steps    = {"1d": 5, "1h": 30, "15m": 130}.get(interval, 5)
