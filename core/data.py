@@ -47,7 +47,7 @@ def _is_premarket() -> bool:
         if now.weekday() >= 5: return False
         t = now.time()
         return dt.time(4, 0) <= t < dt.time(9, 30)
-    except:
+    except Exception:
         return False
 
 
@@ -57,7 +57,7 @@ def _now_et_str() -> str:
         import pytz
         et = pytz.timezone("America/New_York")
         return dt.datetime.now(et).strftime("%H:%M:%S ET")
-    except:
+    except Exception:
         return dt.datetime.utcnow().strftime("%H:%M:%S UTC")
 
 
@@ -245,7 +245,7 @@ def fetch_ticker_info(ticker: str) -> dict:
             "pe_ratio":   info.get("trailingPE"),
             "beta":       info.get("beta"),
         }
-    except:
+    except Exception:
         return {"name": ticker}
 
 
