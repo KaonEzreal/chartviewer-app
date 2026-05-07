@@ -139,7 +139,7 @@ def get_recommendation(conds):
         fails = [c.name for c in conds if not c.passed and c.importance == "critical"]
         return "red", "🔴 진입 보류", f"핵심 조건 미충족: {' · '.join(fails[:2])}", passed, total
     if passed == total:
-        return "cyan", "🔥 매수 강력 추천", "9/9 모든 조건 충족 — 하라는 대로 진입하세요", passed, total
+        return "cyan", "🔥 매수 강력 추천", "9/9 모든 조건 충족 — 진입하세요", passed, total
     if passed >= 7:
         return "green", "✅ 매수 적극 추천", f"{passed}/{total} 조건 충족 — v2 진입 기준 통과", passed, total
     if passed >= 5:
@@ -208,7 +208,7 @@ st.markdown("""
 <span class='trader-badge tb-one'>O'Neil</span>
 <span class='trader-badge tb-ptj'>P.T.Jones</span>
 <span class='trader-badge tb-liv'>Livermore</span>
-&nbsp;v2 백테스트 검증 전략 (PF 1.85 / 승률 46.1%) — 하라는 대로만 하세요
+&nbsp;v2 백테스트 검증 전략 (PF 1.85 / 승률 46.1%)
 </div>
 </div>
 <div style='text-align:right'>
