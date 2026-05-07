@@ -258,10 +258,11 @@ def master_score(df: pd.DataFrame, spy_df=None) -> MasterScorecard:
     # ══════════════════════════════════════════════════════════════
     pattern = 0
 
-    # (a) VCP (8점)
-    if vcp["breakout_ready"]:  pattern += 8
-    elif vcp["detected"]:      pattern += 5
-    elif vcp["tightness"] > 0.15: pattern += 2
+    # (a) VCP (최대 12점) — enhanced_vcp 완전 활용
+    if vcp.get("is_perfect_vcp"):       pattern += 12  # 수축+거래량+돌파확인+기관 완전체
+    elif vcp["breakout_ready"]:         pattern += 8
+    elif vcp["detected"]:               pattern += 5
+    elif vcp.get("tightness", 0) > 0.15: pattern += 2
 
     # (b) Cup-with-Handle (6점)
     if cph["breakout"]:       pattern += 6
