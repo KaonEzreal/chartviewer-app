@@ -469,6 +469,159 @@ v2: +18% 달성 시 보유량 50% 청산<br>
 </div>
 """, unsafe_allow_html=True)
 
+
+    # ══════════════════════════════════════════════════════════════
+    # 📊 내 매매 관리 — 트레일링 스톱 계산기
+    # ══════════════════════════════════════════════════════════════
+    st.markdown("""
+<div style='background:linear-gradient(135deg,rgba(6,182,212,0.07),rgba(0,0,0,0));
+border:1px solid rgba(6,182,212,0.3);border-radius:16px;padding:18px 20px;margin-bottom:16px;'>
+<div style='font-size:14px;font-weight:900;color:#06b6d4;margin-bottom:4px;'>
+📊 내 매매 관리 — 트레일링 스톱 계산기
+</div>
+<div style='font-size:11px;color:#5a7299;'>
+매수 후 매일 저녁 고점을 입력하면 → 오늘의 손절가를 자동 계산합니다
+</div>
+</div>""", unsafe_allow_html=True)
+
+    _t1, _t2, _t3, _t4, _t5 = st.columns([1.2, 1, 1, 1, 1.2])
+    with _t1:
+        _my_entry = st.number_input(
+            "💵 내 매수가 ($)", value=float(round(last_price, 2)),
+            step=0.5, min_value=0.01, key="trail_entry",
+            help="실제로 매수한 가격을 입력하세요"
+        )
+    with _t2:
+        _my_high = st.number_input(
+            "📈 오늘 고점 ($)", value=float(round(last_price, 2)),
+            step=0.5, min_value=0.01, key="trail_high",
+            help="오늘 장중 기록한 최고가 (HTS/MTS에서 확인)"
+        )
+    with _t3:
+        _trail_grade = st.selectbox(
+            "등급", ["SS/SSS (8%)", "S (10%)", "A (12%)", "1차익절후 (7%)"],
+            index=["SSS","SS","S","A"].index(sc.grade) if sc.grade in ["SSS","SS","S","A"] else 2,
+            key="trail_grade",
+            help="종목 등급에 맞는 트레일링 비율"
+        )
+    with _t4:
+        _partial_done = st.checkbox(
+            "1차 익절(+18%) 완료", value=False, key="partial_done",
+            help="체크하면 트레일링 7%로 타이트하게 적용"
+        )
+    with _t5:
+        _holding_shares = st.number_input(
+            "보유 수량 (주)", value=10, step=1, min_value=1, key="holding_shares",
+            help="현재 보유 중인 주식 수량"
+        )
+
+    # 트레일링 % 결정
+    if _partial_done:
+        _trail_pct_val = 0.07
+        _trail_label   = "7% (1차 익절 후 타이트)"
+    else:
+        _trail_map = {
+            "SS/SSS (8%)": 0.08,
+            "S (10%)":     0.10,
+            "A (12%)":     0.12,
+            "1차익절후 (7%)": 0.07,
+        }
+        _trail_pct_val = _trail_map.get(_trail_grade, 0.10)
+        _trail_label   = _trail_grade
+
+    if _my_entry > 0 and _my_high >= _my_entry:
+        _new_stop      = round(_my_high * (1 - _trail_pct_val), 2)
+        _be_trigger    = round(_my_entry * 1.10, 2)   # +10% 브레이크이븐
+        _be_stop       = round(_my_entry * 1.01, 2)   # 진입가+1%
+        _tp1_target    = round(_my_entry * 1.18, 2)   # +18% 1차 익절
+        _gain_now      = (_my_high / _my_entry - 1) * 100
+        _stop_from_entry = (_new_stop / _my_entry - 1) * 100
+        _stop_from_high  = (_new_stop / _my_high - 1) * 100
+
+        # 현재 상태 판정
+        if _my_high >= _tp1_target:
+            _status = ("🎯 1차 익절 구간 도달", "#22c55e",
+                       f"+18% 달성 → 보유량 절반 매도 후 트레일링 7%로 전환")
+        elif _my_high >= _be_trigger:
+            _status = ("✅ 브레이크이븐 구간", "#06b6d4",
+                       f"+10% 달성 → 손절가를 진입가+1% ({_be_stop:.2f})로 상향")
+        elif _gain_now >= 0:
+            _status = ("📈 수익 중", "#22c55e",
+                       f"현재 +{_gain_now:.1f}% · 아직 브레이크이븐 미달 ({_be_trigger:.2f} 도달 시 전환)")
+        else:
+            _status = ("📉 손실 중", "#ef4444",
+                       f"현재 {_gain_now:.1f}% · 손절가 {_new_stop:.2f} 이하 즉시 매도")
+
+        _profit_if_trail = (_new_stop - _my_entry) * _holding_shares
+
+        # 결과 카드
+        st.markdown(f"""
+<div style='background:rgba(0,0,0,0.2);border:1px solid #1e3a5f;border-radius:14px;padding:16px;margin-bottom:8px;'>
+<div style='display:flex;align-items:center;gap:10px;margin-bottom:14px;'>
+<div style='font-size:15px;font-weight:800;color:{_status[1]};'>{_status[0]}</div>
+<div style='font-size:11px;color:#5a7299;'>{_status[2]}</div>
+</div>
+<div style='display:grid;grid-template-columns:repeat(5,1fr);gap:8px;'>
+<div style='background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;margin-bottom:3px;'>🛑 오늘 손절가</div>
+<div style='font-size:20px;font-weight:900;color:#ef4444;'>${_new_stop:.2f}</div>
+<div style='font-size:10px;color:#ef4444;'>고점 대비 {_stop_from_high:.1f}%</div>
+<div style='font-size:10px;color:#5a7299;margin-top:2px;'>= 고점×{1-_trail_pct_val:.2f}</div>
+</div>
+<div style='background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;margin-bottom:3px;'>⚡ 브레이크이븐</div>
+<div style='font-size:20px;font-weight:900;color:#f59e0b;'>${_be_trigger:.2f}</div>
+<div style='font-size:10px;color:#f59e0b;'>+10% 달성 시</div>
+<div style='font-size:10px;color:#5a7299;margin-top:2px;'>→ 손절 ${_be_stop:.2f}</div>
+</div>
+<div style='background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;margin-bottom:3px;'>✅ 1차 익절 목표</div>
+<div style='font-size:20px;font-weight:900;color:#22c55e;'>${_tp1_target:.2f}</div>
+<div style='font-size:10px;color:#22c55e;'>+18% → 50% 청산</div>
+<div style='font-size:10px;color:#5a7299;margin-top:2px;'>이후 트레일링 7%</div>
+</div>
+<div style='background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.25);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;margin-bottom:3px;'>📊 현재 손익</div>
+<div style='font-size:20px;font-weight:900;color:{"#22c55e" if _gain_now>=0 else "#ef4444"};'>
+{_gain_now:+.1f}%</div>
+<div style='font-size:10px;color:#5a7299;'>고점 기준</div>
+<div style='font-size:10px;color:#5a7299;margin-top:2px;'>매수 ${_my_entry:.2f}</div>
+</div>
+<div style='background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;margin-bottom:3px;'>💰 트레일 청산 시</div>
+<div style='font-size:20px;font-weight:900;color:{"#22c55e" if _profit_if_trail>=0 else "#ef4444"};'>
+${abs(_profit_if_trail):,.0f}</div>
+<div style='font-size:10px;color:#5a7299;'>{_holding_shares}주 기준</div>
+<div style='font-size:10px;color:{"#22c55e" if _profit_if_trail>=0 else "#ef4444"};margin-top:2px;'>
+{"수익" if _profit_if_trail>=0 else "손실"} ${abs(_profit_if_trail):,.0f}</div>
+</div>
+</div>
+</div>""", unsafe_allow_html=True)
+
+        # 실전 가이드
+        _trail_pct_disp = int(_trail_pct_val * 100)
+        st.markdown(f"""
+<div style='background:rgba(6,182,212,0.05);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:12px 16px;'>
+<div style='font-size:11px;font-weight:700;color:#06b6d4;margin-bottom:6px;'>
+📌 오늘 해야 할 일 ({_trail_label} 적용)
+</div>
+<div style='font-size:11px;color:#d8e8ff;line-height:2.0;'>
+<span style='color:#f59e0b;font-weight:700;'>①</span>
+오늘 고점 <b style='color:#06b6d4;'>${_my_high:.2f}</b> ×
+{1-_trail_pct_val:.2f} = 새 손절가 <b style='color:#ef4444;'>${_new_stop:.2f}</b><br>
+<span style='color:#f59e0b;font-weight:700;'>②</span>
+어제 손절가보다 <b>높으면</b> → 증권사 앱에서 <b style='color:#06b6d4;'>즉시 변경</b><br>
+<span style='color:#f59e0b;font-weight:700;'>③</span>
+주가가 <b style='color:#ef4444;'>${_new_stop:.2f}</b> 이하로 내려가면 → <b style='color:#ef4444;'>즉시 전량 매도</b><br>
+<span style='color:#22c55e;font-weight:700;'>④</span>
+<b style='color:#22c55e;'>${_tp1_target:.2f}</b> (+18%) 도달 시 → <b style='color:#22c55e;'>보유량 50% 매도</b> + 트레일링 7%로 전환
+</div>
+</div>""", unsafe_allow_html=True)
+
+    elif _my_high < _my_entry:
+        st.warning("⚠️ 오늘 고점이 매수가보다 낮습니다. 값을 확인해주세요.")
+
+
     left, right = st.columns([2.1, 1], gap="medium")
     with left:
         name=info.get("name",ticker); sector=info.get("sector","")
