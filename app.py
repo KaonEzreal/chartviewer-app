@@ -75,7 +75,10 @@ html,body,[class*="css"],.stApp{background:var(--bg)!important;color:var(--text)
 .stTextInput>div>div>input{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:10px!important;color:var(--text)!important;font-size:15px!important;}
 .stSelectbox>div>div{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:10px!important;}
 .stButton>button{background:linear-gradient(135deg,#06b6d4,#3b82f6)!important;color:white!important;border:none!important;border-radius:10px!important;font-weight:800!important;font-size:14px!important;padding:10px 24px!important;}
-div[data-testid="stExpander"]{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:12px!important;}
+div[data-testid="stExpander"]{background:transparent!important;border:none!important;border-radius:0!important;padding:0!important;margin:0!important;}
+div[data-testid="stExpander"] > details > summary{display:none!important;}
+div[data-testid="stExpander"] > details{border:none!important;background:transparent!important;}
+div[data-testid="stExpander"] > details > div{padding:0!important;}
 footer,header,#MainMenu{display:none!important;}
 </style>
 """, unsafe_allow_html=True)
