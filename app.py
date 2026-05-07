@@ -9,7 +9,7 @@ from plotly.subplots import make_subplots
 import streamlit as st
 
 from core.config import TF_OPTIONS
-from core.data import fetch_ticker_info
+from core.data import fetch_ticker_info, fetch_realtime_price, clear_all_cache
 from core.indicators import bbands, macd, rsi, sma, stochastic, vwap
 from core.signal import (
     build_signal, calc_entry_conditions, build_trade_plan,
@@ -212,7 +212,7 @@ st.markdown("""
 </div>
 </div>
 <div style='text-align:right'>
-<div style='font-size:11px;color:#5a7299;'>Yahoo Finance · 장중 30초 / 장외 10분 캐시 · prepost 포함</div>
+<div style='font-size:11px;color:#5a7299;'>Yahoo Finance · 장중 15초 캐시 · 1분봉 실시간 패치 · prepost 포함</div>
 <div style='font-size:11px;color:#5a7299;margin-top:2px;'>⚠️ 본 도구는 투자 조언이 아닙니다</div>
 </div>
 </div>
@@ -238,7 +238,32 @@ with _tabs[0]:
     with ic3:
         tf_default="스윙 (1D)" if style=="스윙" else "단타 (1H)"
         tf_choice=st.selectbox("타임프레임",list(TF_OPTIONS.keys()),index=list(TF_OPTIONS.keys()).index(tf_default),label_visibility="collapsed")
-    with ic4: st.button("🔍 분석",use_container_width=True)
+    with ic4: analyze_btn = st.button("🔍 분석",use_container_width=True)
+
+    # ── 장중 자동 새로고침 + 강제 새로고침 ───────────────────────
+    _market_open = True  # data.py 함수 직접 참조 안 되므로 근사
+    try:
+        import pytz, datetime as _dt
+        _et = pytz.timezone("America/New_York")
+        _now = _dt.datetime.now(_et)
+        _t = _now.time()
+        _market_open = (_now.weekday() < 5 and
+                        _dt.time(9,25) <= _t <= _dt.time(16,5))
+    except: pass
+
+    _side1, _side2, _side3 = st.columns([1.2, 1, 2])
+    with _side1:
+        if st.button("🔄 강제 새로고침", use_container_width=True, key="force_refresh"):
+            clear_all_cache()
+            st.rerun()
+    with _side2:
+        _auto = st.toggle("⚡ 자동갱신", value=False, key="auto_refresh",
+                          help="장중 30초마다 자동 갱신 (장중에만 의미 있음)")
+    with _side3:
+        if _market_open:
+            st.markdown("<div style='padding:6px 0;font-size:11px;color:#22c55e;'>🟢 장중 — 15초 캐시 · 1분봉 실시간 패치 적용 중</div>", unsafe_allow_html=True)
+        else:
+            st.markdown("<div style='padding:6px 0;font-size:11px;color:#5a7299;'>🔴 장외 — 10분 캐시 · 마지막 종가 기준</div>", unsafe_allow_html=True)
 
     ticker=ticker.strip().upper()
     if not ticker:
@@ -256,6 +281,30 @@ with _tabs[0]:
     sig,df=result
     sc=sig.sc
     last_price=float(df["Close"].iloc[-1])
+
+    # ── 실시간 현재가 오버레이 (fast_info) ──────────────────────
+    _rt = fetch_realtime_price(ticker)
+    if _rt and _rt.get("price"):
+        _p   = _rt["price"]
+        _chg = _rt["chg_pct"]
+        _tc  = "#22c55e" if _chg >= 0 else "#ef4444"
+        _ts  = "▲" if _chg >= 0 else "▼"
+        _dh  = f"  고:{_rt['day_high']:.2f}" if _rt.get("day_high") else ""
+        _dl  = f"  저:{_rt['day_low']:.2f}"  if _rt.get("day_low")  else ""
+        st.markdown(f"""
+<div style='background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:8px 16px;margin-bottom:8px;display:flex;align-items:center;gap:16px;'>
+<div style='font-size:11px;color:#5a7299;font-weight:600;'>⚡ 실시간 현재가 (fast_info)</div>
+<div style='font-size:20px;font-weight:900;color:#06b6d4;'>${_p:,.2f}</div>
+<div style='font-size:14px;font-weight:700;color:{_tc};'>{_ts} {abs(_chg):.2f}%</div>
+<div style='font-size:11px;color:#5a7299;'>{_dh}{_dl}</div>
+<div style='margin-left:auto;font-size:10px;color:#5a7299;'>{_rt.get("time","")}</div>
+</div>""", unsafe_allow_html=True)
+
+    # ── 자동갱신 (장중 30초) ─────────────────────────────────────
+    if _auto and _market_open:
+        import time as _time
+        _time.sleep(30)
+        st.rerun()
 
     if sig.vix_text:
         vv=sig.vix or 0
@@ -475,7 +524,10 @@ v2: +18% 달성 시 보유량 50% 청산<br>
 <div class='kv'><div class='k'>Volume Ratio</div><div class='v' style='color:{"#22c55e" if sc.vol_ratio>=1.2 else "#5a7299"};'>{sc.vol_ratio:.2f}x</div></div>
 <div class='kv'><div class='k'>VWAP 대비</div><div class='v' style='color:{vwap_c};'>{vwap_diff:+.2f}%</div></div>
 <div class='kv'><div class='k'>BB Squeeze</div><div class='v' style='color:{"#f59e0b" if sc.bb_squeeze else "#5a7299"};'>{"⚡수축감지" if sc.bb_squeeze else "일반"}</div></div>
-<div class='kv'><div class='k'>VCP</div><div class='v' style='color:{"#06b6d4" if sc.vcp["breakout_ready"] else "#5a7299"};'>{"🚀돌파준비" if sc.vcp["breakout_ready"] else("⚡감지" if sc.vcp["detected"] else "—")}</div></div>
+<div class='kv'><div class='k'>VCP (점수)</div><div class='v' style='color:{"#06b6d4" if sc.is_perfect_vcp else "#22c55e" if sc.vcp["breakout_ready"] else "#5a7299"};'>{"🔥완전체" if sc.is_perfect_vcp else "🚀돌파준비" if sc.vcp["breakout_ready"] else ("⚡감지" if sc.vcp["detected"] else "—")} {sc.vcp_score}/10</div></div>
+<div class='kv'><div class='k'>RVOL</div><div class='v' style='color:{"#22c55e" if sc.rvol>=1.5 else "#f59e0b" if sc.rvol>=1.2 else "#5a7299"};'>{sc.rvol:.2f}x {sc.rvol_category}</div></div>
+<div class='kv'><div class='k'>기관수급</div><div class='v' style='color:{"#22c55e" if sc.inst_score>0 else "#ef4444" if sc.inst_score<0 else "#5a7299"};'>{sc.inst_signal}</div></div>
+<div class='kv'><div class='k'>돌파품질</div><div class='v' style='color:{"#ef4444" if sc.fake_breakout else "#22c55e" if sc.close_above_pivot else "#5a7299"};'>{"⚠️Fake BK" if sc.fake_breakout else "✅종가안착" if sc.close_above_pivot else "—"}</div></div>
 </div>""", unsafe_allow_html=True)
 
         st.markdown("<br><div class='sec-title'>이동평균 현황</div>",unsafe_allow_html=True)
@@ -655,6 +707,9 @@ with _tabs[1]:
                     "trail_pct":tp2.trail_pct,"be_trigger":tp2.be_trigger,
                     "weighted_rr":tp2.weighted_rr,"weekly":s.weekly_perf,
                     "cond_passed":pc,"cond_total":tc,"rec_color":rc,"rec_label":rl,"rec_desc":rd,
+                    "rvol":s.sc.rvol,"inst_signal":s.sc.inst_signal,"inst_score":s.sc.inst_score,
+                    "fake_breakout":s.sc.fake_breakout,"close_above_pivot":s.sc.close_above_pivot,
+                    "is_perfect_vcp":s.sc.is_perfect_vcp,"vcp_score":s.sc.vcp_score,
                 })
             except: continue
         bar.empty(); stat.empty()
@@ -714,13 +769,17 @@ with _tabs[1]:
 <div style='height:100%;width:{cond_bar}%;background:{badge_c};border-radius:99px;'></div>
 </div>
 </div>
-<div style='display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:8px;'>
+<div style='display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:6px;'>
 <div style='font-size:11px;color:#5a7299;'>TT <span style='color:#d8e8ff;font-weight:700;'>{r["tt"]}/8</span></div>
 <div style='font-size:11px;color:#5a7299;'>RS <span style='color:#d8e8ff;font-weight:700;'>{r["rs"]}</span></div>
 <div style='font-size:11px;color:#5a7299;'>RSI <span style='color:#d8e8ff;font-weight:700;'>{r["rsi"]:.0f}</span></div>
 <div style='font-size:11px;color:#5a7299;'>ADX <span style='color:#d8e8ff;font-weight:700;'>{r["adx"]:.0f}</span></div>
-<div style='font-size:11px;color:#5a7299;'>Vol <span style='color:#d8e8ff;font-weight:700;'>{r["vol_r"]:.2f}x</span></div>
+<div style='font-size:11px;color:#5a7299;'>RVOL <span style='color:{"#22c55e" if r.get("rvol",1)>=1.5 else "#f59e0b" if r.get("rvol",1)>=1.2 else "#d8e8ff"};font-weight:700;'>{r.get("rvol",1.0):.2f}x</span></div>
 <div style='font-size:11px;color:{wc};'>{ws_} <span style='font-weight:700;'>{abs(r["weekly"]):.1f}%</span></div>
+</div>
+<div style='font-size:10px;margin-bottom:6px;color:#5a7299;'>
+기관: <span style='color:{"#22c55e" if r.get("inst_score",0)>0 else "#ef4444" if r.get("inst_score",0)<0 else "#5a7299"};font-weight:700;'>{r.get("inst_signal","—")}</span>
+{"&nbsp;<span style='color:#ef4444;'>⚠️Fake</span>" if r.get("fake_breakout") else ""}{"&nbsp;<span style='color:#06b6d4;font-weight:700;'>🔥VCP완전체</span>" if r.get("is_perfect_vcp") else ""}{"&nbsp;<span style='color:#22c55e;'>✅안착</span>" if r.get("close_above_pivot") else ""}
 </div>
 <div style='border-top:1px solid rgba(255,255,255,0.06);padding-top:8px;'>
 <div style='display:flex;justify-content:space-between;margin-bottom:3px;'>
