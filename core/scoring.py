@@ -27,6 +27,7 @@ from .indicators import (
     minervini_trend_template, detect_vcp, weinstein_stage,
     oneil_rs_score, detect_cup_handle,
     ptj_defense_rule, livermore_pivots,
+    relative_volume, breakout_quality, institutional_proxy, enhanced_vcp,
 )
 
 
@@ -73,6 +74,16 @@ class MasterScorecard:
     bb_squeeze: bool
     golden_cross: bool
     death_cross: bool
+    # 고급 거래량/돌파 분석
+    rvol:           float
+    rvol_category:  str
+    vol_confirm:    bool
+    fake_breakout:  bool
+    close_above_pivot: bool
+    inst_signal:    str
+    inst_score:     int
+    vcp_score:      int
+    is_perfect_vcp: bool
 
     reasons: List[str]
     warnings: List[str]
@@ -157,7 +168,18 @@ def master_score(df: pd.DataFrame, spy_df=None) -> MasterScorecard:
 
     # ── 전설 트레이더 기법 ─────────────────────────────────────────
     tt   = minervini_trend_template(df)
-    vcp  = detect_vcp(df)
+    vcp   = enhanced_vcp(df)
+    _rvol = relative_volume(df)
+    _bq   = breakout_quality(df)
+    _inst = institutional_proxy(df)
+    # 보정값 미리 계산 (패턴/수급/리스크 섹션에서 사용)
+    rvol_val = _rvol["rvol"]
+    if   rvol_val >= 2.0: vol_quality_bonus = 4
+    elif rvol_val >= 1.5: vol_quality_bonus = 3
+    elif rvol_val >= 1.2: vol_quality_bonus = 1
+    else:                 vol_quality_bonus = 0
+    fake_bk_penalty = -5 if _bq["fake_breakout"] else 0
+    inst_bonus = max(-4, min(4, _inst["inst_score"] * 2))
     ws   = weinstein_stage(df)
     rs   = oneil_rs_score(df, spy_df)
     cph  = detect_cup_handle(df)
@@ -274,6 +296,7 @@ def master_score(df: pd.DataFrame, spy_df=None) -> MasterScorecard:
     elif vol_ratio >= 1.0:    flow += 3
     elif vol_ratio >= 0.8:    flow += 1
     else:                     flow += 0
+    flow += vol_quality_bonus  # RVOL 보너스 (+0~+4)
 
     # (c) VWAP 위치 (4점)
     if vwap_ab:               flow += 4
@@ -284,6 +307,8 @@ def master_score(df: pd.DataFrame, spy_df=None) -> MasterScorecard:
     # ══════════════════════════════════════════════════════════════
     risk = 0
 
+    risk += fake_bk_penalty        # fake breakout -5
+    risk += inst_bonus // 2        # 기관수급 ±2
     # 골든/데드크로스
     if golden:    risk += 5
     if death:     risk -= 7
@@ -398,5 +423,14 @@ def master_score(df: pd.DataFrame, spy_df=None) -> MasterScorecard:
         vwap_val=vwap_v, vwap_above=vwap_ab,
         week52_h=h52, week52_l=l52, week52_pos=pos52,
         bb_squeeze=bb_squeeze, golden_cross=golden, death_cross=death,
+        rvol=_rvol["rvol"],
+        rvol_category=_rvol["rvol_category"],
+        vol_confirm=_bq["vol_confirmation"],
+        fake_breakout=_bq["fake_breakout"],
+        close_above_pivot=_bq["close_above_breakout"],
+        inst_signal=_inst["inst_signal"],
+        inst_score=_inst["inst_score"],
+        vcp_score=vcp.get("vcp_score", 0),
+        is_perfect_vcp=vcp.get("is_perfect_vcp", False),
         reasons=reasons, warnings=warnings,
     )
