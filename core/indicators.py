@@ -241,6 +241,208 @@ def detect_vcp(df: pd.DataFrame, lookback: int = 60) -> dict:
     }
 
 
+
+# ══════════════════════════════════════════════════════════════════
+# ★ 고급 거래량/돌파 분석 (VCP 강화 + 추가 필터)
+# ══════════════════════════════════════════════════════════════════
+
+def relative_volume(df: pd.DataFrame, period: int = 20) -> dict:
+    """
+    RVOL (Relative Volume) — 현재 거래량 vs 동시간대 평균
+    돌파 시 RVOL 1.5+ = 진짜 돌파
+    돌파 시 RVOL < 1.0 = fake breakout 가능성
+    """
+    if len(df) < period + 1:
+        return {"rvol": 1.0, "rvol_category": "보통", "is_volume_breakout": False}
+
+    vol = df["Volume"]
+    vol_now  = float(vol.iloc[-1])
+    vol_avg  = float(vol.tail(period + 1).iloc[:-1].mean())  # 오늘 제외 평균
+    rvol     = vol_now / vol_avg if vol_avg > 0 else 1.0
+
+    if rvol >= 2.0:   category = "폭발적 🔥"
+    elif rvol >= 1.5: category = "강함 ✅"
+    elif rvol >= 1.2: category = "양호"
+    elif rvol >= 0.8: category = "보통"
+    else:             category = "약함 ⚠️"
+
+    return {
+        "rvol":               round(rvol, 2),
+        "rvol_category":      category,
+        "is_volume_breakout": rvol >= 1.5,  # 돌파 거래량 기준
+    }
+
+
+def breakout_quality(df: pd.DataFrame) -> dict:
+    """
+    돌파 품질 분석:
+    1. 돌파 당일 거래량 > 20일 평균 1.5~2배 (VCP 핵심)
+    2. 신고가 돌파 후 종가 안착 여부 (장중 되돌림 없이 종가 유지)
+    3. Fake breakout 필터 (돌파 후 당일 종가가 돌파점 아래로 회귀)
+    """
+    if len(df) < 30:
+        return {
+            "vol_confirmation": False,
+            "close_above_breakout": False,
+            "fake_breakout": False,
+            "breakout_strength": 0.0,
+            "rvol_breakout": 1.0,
+        }
+
+    close  = df["Close"]
+    high   = df["High"]
+    low    = df["Low"]
+    vol    = df["Volume"]
+    n      = len(df)
+
+    # 저항선 (20일 고점)
+    pivot_high = float(high.tail(21).iloc[:-1].max())
+    last_close = float(close.iloc[-1])
+    last_high  = float(high.iloc[-1])
+    last_low   = float(low.iloc[-1])
+    last_vol   = float(vol.iloc[-1])
+    avg_vol    = float(vol.tail(21).iloc[:-1].mean())
+
+    # 1. 거래량 확인 (돌파 당일 1.5배 이상)
+    rvol = last_vol / avg_vol if avg_vol > 0 else 1.0
+    vol_confirmation = rvol >= 1.5
+
+    # 2. 신고가 돌파 + 종가 안착 (종가가 저항선 위에서 마감)
+    above_pivot       = last_close > pivot_high * 0.995
+    close_above_pivot = last_close > pivot_high
+
+    # 3. Fake breakout 필터
+    #    장중 돌파했다가 종가가 다시 저항선 아래로 내려온 경우
+    intraday_broke   = last_high > pivot_high * 1.005
+    fake_breakout    = intraday_broke and (last_close < pivot_high * 0.995)
+
+    # 4. 돌파 강도 (종가 위치: 저항선 대비 %)
+    breakout_strength = ((last_close - pivot_high) / pivot_high * 100) if pivot_high > 0 else 0.0
+
+    return {
+        "vol_confirmation":     vol_confirmation,
+        "rvol_breakout":        round(rvol, 2),
+        "close_above_breakout": close_above_pivot,
+        "fake_breakout":        fake_breakout,
+        "breakout_strength":    round(breakout_strength, 2),
+        "pivot_high":           round(pivot_high, 2),
+        "above_pivot":          above_pivot,
+    }
+
+
+def institutional_proxy(df: pd.DataFrame, period: int = 5) -> dict:
+    """
+    기관 수급 근사치 (Yahoo Finance 무료 데이터 한계상 proxy 사용):
+    - 최근 5일 OBV 방향 (On-Balance Volume)
+    - 대량 거래 + 상승 마감 = 기관 매집 신호
+    - 대량 거래 + 하락 마감 = 기관 매도 신호
+    """
+    if len(df) < period + 5:
+        return {
+            "inst_signal": "중립",
+            "inst_score": 0,
+            "big_vol_up_days": 0,
+            "big_vol_down_days": 0,
+            "obv_trend": "횡보",
+        }
+
+    d     = df.tail(period + 5).copy()
+    close = d["Close"]
+    vol   = d["Volume"]
+    avg_vol = float(vol.mean())
+
+    # OBV 방향 (최근 period일)
+    obv_vals = []
+    obv_cum  = 0.0
+    closes   = close.values
+    vols     = vol.values
+    for i in range(1, len(closes)):
+        if closes[i] > closes[i-1]:   obv_cum += vols[i]
+        elif closes[i] < closes[i-1]: obv_cum -= vols[i]
+        obv_vals.append(obv_cum)
+
+    obv_recent = obv_vals[-period:] if len(obv_vals) >= period else obv_vals
+    obv_rising = len(obv_recent) >= 2 and obv_recent[-1] > obv_recent[0]
+    obv_trend  = "상승 ✅" if obv_rising else "하락 ⚠️"
+
+    # 최근 5일 대량거래일 분류
+    recent = d.tail(period)
+    big_vol_up   = 0
+    big_vol_down = 0
+    for _, row in recent.iterrows():
+        is_big = float(row["Volume"]) > avg_vol * 1.3
+        is_up  = float(row["Close"]) >= float(row["Open"])
+        if is_big and is_up:   big_vol_up   += 1
+        elif is_big and not is_up: big_vol_down += 1
+
+    # 신호 판정
+    if big_vol_up >= 2 and obv_rising:
+        signal = "기관 매집 🏦"
+        score  = 2
+    elif big_vol_up >= 1 and obv_rising:
+        signal = "매집 가능성"
+        score  = 1
+    elif big_vol_down >= 2 and not obv_rising:
+        signal = "기관 매도 ⚠️"
+        score  = -2
+    elif big_vol_down >= 1:
+        signal = "매도 가능성"
+        score  = -1
+    else:
+        signal = "중립"
+        score  = 0
+
+    return {
+        "inst_signal":      signal,
+        "inst_score":       score,
+        "big_vol_up_days":  big_vol_up,
+        "big_vol_down_days":big_vol_down,
+        "obv_trend":        obv_trend,
+    }
+
+
+def enhanced_vcp(df: pd.DataFrame) -> dict:
+    """
+    VCP 강화 버전 — 거래량 필터 강화
+    Minervini 핵심: 수축기 거래량 ↓ + 돌파 거래량 ↑ (1.5~2배)
+    """
+    base    = detect_vcp(df)
+    bq      = breakout_quality(df)
+    rvol    = relative_volume(df)
+    inst    = institutional_proxy(df)
+
+    # VCP 완전체 조건
+    is_perfect_vcp = (
+        base["detected"] and
+        base["vol_dry_up"] and           # 수축기 거래량 감소 ✅
+        bq["vol_confirmation"] and        # 돌파 거래량 1.5배+ ✅
+        not bq["fake_breakout"] and       # fake breakout 아님 ✅
+        inst["inst_score"] >= 0           # 기관 매도 신호 없음 ✅
+    )
+
+    # VCP 점수 (0~10)
+    vcp_score = 0
+    if base["detected"]:          vcp_score += 2
+    if base["vol_dry_up"]:        vcp_score += 2
+    if base["contractions"] >= 3: vcp_score += 1
+    if bq["vol_confirmation"]:    vcp_score += 2
+    if not bq["fake_breakout"]:   vcp_score += 1
+    if inst["inst_score"] > 0:    vcp_score += 1
+    if bq["close_above_breakout"]:vcp_score += 1
+
+    return {
+        **base,
+        "breakout_quality":   bq,
+        "rvol":               rvol,
+        "institutional":      inst,
+        "is_perfect_vcp":     is_perfect_vcp,
+        "vcp_score":          vcp_score,          # 0~10
+        "vol_confirmation":   bq["vol_confirmation"],
+        "fake_breakout":      bq["fake_breakout"],
+        "close_above_pivot":  bq["close_above_breakout"],
+    }
+
+
 # ══════════════════════════════════════════════════════════════════
 # ★ Weinstein Stage Analysis (30주 = 150일 MA 기반)
 # ══════════════════════════════════════════════════════════════════
