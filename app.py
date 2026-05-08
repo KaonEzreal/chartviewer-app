@@ -213,7 +213,7 @@ st.markdown("""
 </div>
 <div style='text-align:right'>
 <div style='font-size:11px;color:#5a7299;'>Yahoo Finance · 장중 15초 캐시 · 1분봉 실시간 패치 · prepost 포함</div>
-<div style='font-size:11px;color:#5a7299;margin-top:2px;'>⚠️ 본 도구는 투자 조언이 아닙니다</div>
+<div style='font-size:11px;color:#5a7299;margin-top:2px;'></div>
 </div>
 </div>
 """, unsafe_allow_html=True)
@@ -1454,6 +1454,6 @@ TT 6/8 이상 선택<br>
 
 st.markdown("""
 <div style='text-align:center;padding:20px 0 8px;color:#5a7299;font-size:11px;'>
-⚠️ 투자 조언 아닙니다 · v2 백테스트 검증 전략 · 모든 투자 결정은 본인 책임<br>
+v2 백테스트 검증 전략 · 모든 투자 결정은 본인 책임<br>
 Minervini(SEPA/VCP) · Weinstein(Stage) · O'Neil(CANSLIM) · P.T.Jones(200MA) · Livermore(Pivot)
 </div>""", unsafe_allow_html=True)
