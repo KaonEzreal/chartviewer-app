@@ -475,6 +475,20 @@ v2: +18% 달성 시 보유량 50% 청산<br>
     # 📊 내 매매 관리 — 실시간 현재가 반영 매매 가이드
     # ══════════════════════════════════════════════════════════════
 
+    # ── 종목 바뀔 때 매매관리 입력값 초기화 ─────────────────────
+    # session_state에 이전 종목 저장 → 다르면 관련 키 전부 삭제
+    _prev_ticker_key = "mgmt_ticker"
+    if st.session_state.get(_prev_ticker_key) != ticker:
+        # 종목이 바뀌었으면 입력값 초기화
+        for _k in [f"trail_entry_{st.session_state.get(_prev_ticker_key,'')}", 
+                   f"trail_high_{st.session_state.get(_prev_ticker_key,'')}",
+                   f"trail_grade_{st.session_state.get(_prev_ticker_key,'')}",
+                   f"partial_done_{st.session_state.get(_prev_ticker_key,'')}",
+                   f"holding_shares_{st.session_state.get(_prev_ticker_key,'')}"]:
+            if _k in st.session_state:
+                del st.session_state[_k]
+        st.session_state[_prev_ticker_key] = ticker
+
     # 실시간 현재가 fetch (fast_info 10초 캐시)
     _rt_price_data = fetch_realtime_price(ticker)
     _current_price = _rt_price_data.get("price", last_price) if _rt_price_data else last_price
@@ -503,7 +517,7 @@ border:1px solid rgba(6,182,212,0.35);border-radius:16px;padding:16px 20px;margi
     with _mg1:
         _my_entry = st.number_input(
             "💵 내 매수가 ($)", value=float(round(_current_price, 2)),
-            step=0.5, min_value=0.01, key="trail_entry",
+            step=0.5, min_value=0.01, key=f"trail_entry_{ticker}",
             help="실제로 매수한 가격을 입력하세요"
         )
     with _mg2:
@@ -512,24 +526,24 @@ border:1px solid rgba(6,182,212,0.35);border-radius:16px;padding:16px 20px;margi
         _day_high_default = max(_day_high_default or _current_price, _current_price)
         _my_high = st.number_input(
             "📈 오늘 고점 ($)", value=float(round(_day_high_default, 2)),
-            step=0.5, min_value=0.01, key="trail_high",
+            step=0.5, min_value=0.01, key=f"trail_high_{ticker}",
             help="오늘 장중 최고가. 장중이면 자동으로 day_high 반영"
         )
     with _mg3:
         _trail_grade = st.selectbox(
             "등급", ["SS/SSS (8%)", "S (10%)", "A (12%)", "1차익절후 (7%)"],
             index={"SSS":0,"SS":0,"S":1,"A":2}.get(sc.grade, 1),
-            key="trail_grade",
+            key=f"trail_grade_{ticker}",
             help="종목 등급에 맞는 트레일링 비율 (분석 결과 자동 선택됨)"
         )
     with _mg4:
         _partial_done = st.checkbox(
-            "1차익절(+18%) 완료", value=False, key="partial_done",
+            "1차익절(+18%) 완료", value=False, key=f"partial_done_{ticker}",
             help="체크 시 트레일링 7%로 자동 전환"
         )
     with _mg5:
         _holding_shares = st.number_input(
-            "보유 수량 (주)", value=10, step=1, min_value=1, key="holding_shares",
+            "보유 수량 (주)", value=10, step=1, min_value=1, key=f"holding_shares_{ticker}",
             help="보유 수량 입력 시 예상 수익금 계산"
         )
 
