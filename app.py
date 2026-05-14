@@ -226,6 +226,7 @@ _tabs = st.tabs([
     "🔭  빠른 티커 스캔",
     "🎯  만점 티커 찾기",
     "📖  실전 매매 가이드",
+    "💼  내 보유 종목 관리",
 ])
 
 # ══════════════════════════════════════════════════════════════════
@@ -1101,12 +1102,64 @@ with _tabs[2]:
         except Exception: spy_bias="알수없음"
     spy_c={"상승장":"#22c55e","횡보장":"#f59e0b","하락장":"#ef4444"}.get(spy_bias,"#5a7299")
     spy_warn=spy_bias!="상승장"
+
+    # ── 백테스트 기반 국면별 매수 전략 ───────────────────────────
+    _spy_guide = {
+        "상승장": {
+            "icon": "🟢", "title": "SPY 상승장 — 최적 매수 환경",
+            "A": ("🔥 A등급 우선 진입", "#06b6d4",
+                  "강세장 A등급: 승률 51.2% / PF 2.75 — v2 최고 성과 구간"),
+            "S": ("✅ S등급 함께 진입", "#22c55e",
+                  "강세장 S등급: 승률 46.2% / PF 1.88 — 9/9 조건 충족 시 적극 진입"),
+            "action": "buy",
+        },
+        "횡보장": {
+            "icon": "🟡", "title": "SPY 횡보장 — 선별 매수",
+            "A": ("⚠️ A등급 진입 보류", "#ef4444",
+                  "중립장 A등급: PF 0.93 (손실 구간) — 진입 금지"),
+            "S": ("🔍 S등급 기준 강화", "#f59e0b",
+                  "중립장 S등급: 승률 38.6% / PF 1.15 — 9/9 조건 + TT 7/8+ 시만 소량"),
+            "action": "caution",
+        },
+        "하락장": {
+            "icon": "🔴", "title": "SPY 하락장 — 신규 매수 금지",
+            "A": ("🚫 A등급 진입 금지", "#ef4444", "하락장 전 등급 진입 금지 (v2 백테스트 원칙)"),
+            "S": ("🚫 S등급 진입 금지", "#ef4444", "하락장 전 등급 진입 금지 (v2 백테스트 원칙)"),
+            "action": "stop",
+        },
+        "알수없음": {
+            "icon": "❓", "title": "SPY 데이터 없음",
+            "A": ("❓ 판단 불가", "#5a7299", "SPY 데이터 재확인 필요"),
+            "S": ("❓ 판단 불가", "#5a7299", "SPY 데이터 재확인 필요"),
+            "action": "unknown",
+        },
+    }
+    _sg = _spy_guide.get(spy_bias, _spy_guide["알수없음"])
+    _a_label, _a_color, _a_desc = _sg["A"]
+    _s_label, _s_color, _s_desc = _sg["S"]
+    _action = _sg["action"]
+
     st.markdown(f"""
-<div style='background:{"rgba(239,68,68,0.08)" if spy_warn else "rgba(34,197,94,0.07)"};border:1px solid {"rgba(239,68,68,0.3)" if spy_warn else "rgba(34,197,94,0.2)"};border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;'>
-<div style='font-size:24px;'>{"🔴" if spy_bias=="하락장" else "🟡" if spy_bias=="횡보장" else "🟢"}</div>
-<div>
-<div style='font-size:14px;font-weight:800;color:{spy_c};'>SPY {spy_bias} — {"만점 티커라도 신중하게" if spy_warn else "최적 매수 환경"}</div>
-<div style='font-size:11px;color:#5a7299;margin-top:2px;'>{"약세/횡보장: 조건 충족 종목도 손실 가능 · 소량 또는 관망" if spy_warn else "강세장 + 9/9 = v2 최고 성과 구간"}</div>
+<div style='background:{"rgba(239,68,68,0.08)" if spy_warn else "rgba(34,197,94,0.07)"};
+border:1px solid {"rgba(239,68,68,0.3)" if spy_warn else "rgba(34,197,94,0.2)"};
+border-radius:14px;padding:14px 16px;margin-bottom:14px;'>
+<div style='display:flex;align-items:center;gap:10px;margin-bottom:10px;'>
+<div style='font-size:24px;'>{_sg["icon"]}</div>
+<div style='font-size:14px;font-weight:800;color:{spy_c};'>{_sg["title"]}</div>
+</div>
+<div style='display:grid;grid-template-columns:1fr 1fr;gap:8px;'>
+<div style='background:rgba({("6,182,212" if _action=="buy" else "239,68,68" if _action=="stop" else "245,158,11")},0.1);
+border:1px solid rgba({("6,182,212" if _action=="buy" else "239,68,68" if _action=="stop" else "245,158,11")},0.3);
+border-radius:10px;padding:10px;'>
+<div style='font-size:12px;font-weight:800;color:{_a_color};margin-bottom:3px;'>{_a_label}</div>
+<div style='font-size:10px;color:#5a7299;'>{_a_desc}</div>
+</div>
+<div style='background:rgba({("34,197,94" if _action=="buy" else "239,68,68" if _action=="stop" else "245,158,11")},0.08);
+border:1px solid rgba({("34,197,94" if _action=="buy" else "239,68,68" if _action=="stop" else "245,158,11")},0.25);
+border-radius:10px;padding:10px;'>
+<div style='font-size:12px;font-weight:800;color:{_s_color};margin-bottom:3px;'>{_s_label}</div>
+<div style='font-size:10px;color:#5a7299;'>{_s_desc}</div>
+</div>
 </div>
 </div>""", unsafe_allow_html=True)
     PERFECT_PRESETS={
@@ -1191,8 +1244,13 @@ with _tabs[2]:
 <div style='font-size:20px;font-weight:900;color:#06b6d4;'>9/9</div>
 </div>
 </div>
-<div style='background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.3);border-radius:8px;padding:6px;text-align:center;margin-bottom:10px;'>
-<div style='font-size:14px;font-weight:900;color:#06b6d4;'>🔥 매수 강력 추천</div>
+<div style='background:rgba({"6,182,212" if _action=="buy" else "239,68,68" if _action=="stop" else "245,158,11"},0.1);
+border:1px solid rgba({"6,182,212" if _action=="buy" else "239,68,68" if _action=="stop" else "245,158,11"},0.3);
+border-radius:8px;padding:6px;text-align:center;margin-bottom:10px;'>
+<div style='font-size:14px;font-weight:900;color:{"#06b6d4" if _action=="buy" else "#ef4444" if _action=="stop" else "#f59e0b"};'>
+{"🔥 A등급 우선 매수 추천" if r["grade"] in ["A"] and _action=="buy" else "✅ S등급 매수 추천" if _action=="buy" else "🚫 현재 매수 금지" if _action=="stop" else "⚠️ 조건 강화 후 소량만"}
+</div>
+<div style='font-size:10px;color:#5a7299;margin-top:1px;'>SPY {spy_bias} 기준</div>
 </div>
 <div style='background:rgba(0,0,0,0.2);border-radius:10px;padding:10px;margin-bottom:10px;'>
 <div style='display:flex;align-items:center;gap:8px;margin-bottom:6px;'>
@@ -1561,4 +1619,225 @@ st.markdown("""
 <div style='text-align:center;padding:20px 0 8px;color:#5a7299;font-size:11px;'>
 v2 백테스트 검증 전략 · 모든 투자 결정은 본인 책임<br>
 Minervini(SEPA/VCP) · Weinstein(Stage) · O'Neil(CANSLIM) · P.T.Jones(200MA) · Livermore(Pivot)
+</div>""", unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════
+# 탭 5 — 내 보유 종목 관리
+# ══════════════════════════════════════════════════════════════════
+with _tabs[4]:
+
+    st.markdown("""
+<div style='margin-bottom:16px;'>
+<div style='font-size:16px;font-weight:900;color:#06b6d4;margin-bottom:4px;'>
+💼 내 보유 종목 관리
+</div>
+<div style='font-size:12px;color:#5a7299;line-height:1.6;'>
+보유 종목을 입력하면 → 전날 고점 자동 조회 → 오늘 손절가 자동 계산<br>
+1차 익절(+18%) · 브레이크이븐 · 트레일링 스톱을 실시간으로 추적합니다
+</div>
+</div>""", unsafe_allow_html=True)
+
+    # ── session_state로 보유 종목 목록 관리 ────────────────────────
+    if "portfolio" not in st.session_state:
+        st.session_state["portfolio"] = [
+            {"ticker": "", "shares": 10, "entry": 0.0}
+        ]
+
+    # + 버튼 / 전체 삭제
+    _col_add, _col_clear, _col_spacer = st.columns([1, 1, 4])
+    with _col_add:
+        if st.button("➕ 종목 추가", use_container_width=True, key="port_add"):
+            st.session_state["portfolio"].append(
+                {"ticker": "", "shares": 10, "entry": 0.0}
+            )
+            st.rerun()
+    with _col_clear:
+        if st.button("🗑️ 전체 초기화", use_container_width=True, key="port_clear"):
+            st.session_state["portfolio"] = [{"ticker": "", "shares": 10, "entry": 0.0}]
+            st.rerun()
+
+    st.markdown("---")
+
+    # ── 종목별 입력 + 요약 카드 ────────────────────────────────────
+    _to_delete = []
+    for _pi, _pos in enumerate(st.session_state["portfolio"]):
+        _pc1, _pc2, _pc3, _pc4, _pc5 = st.columns([1.8, 1, 1.2, 0.5, 0.5])
+        with _pc1:
+            _tk_input = st.text_input(
+                f"종목 #{_pi+1}", value=_pos["ticker"],
+                placeholder="AAPL", key=f"port_tk_{_pi}",
+                label_visibility="collapsed"
+            ).strip().upper()
+        with _pc2:
+            _sh_input = st.number_input(
+                "수량", value=int(_pos["shares"]),
+                min_value=1, step=1, key=f"port_sh_{_pi}",
+                label_visibility="collapsed"
+            )
+        with _pc3:
+            _en_input = st.number_input(
+                "매입가", value=float(_pos["entry"]) if _pos["entry"] else 0.0,
+                min_value=0.0, step=1.0, format="%.2f", key=f"port_en_{_pi}",
+                label_visibility="collapsed"
+            )
+        with _pc4:
+            _grade_sel = st.selectbox(
+                "등급", ["S(10%)", "SS(8%)", "A(12%)", "익절후(7%)"],
+                key=f"port_gr_{_pi}", label_visibility="collapsed"
+            )
+        with _pc5:
+            if st.button("❌", key=f"port_del_{_pi}", help="이 종목 삭제"):
+                _to_delete.append(_pi)
+
+        # session_state 업데이트
+        st.session_state["portfolio"][_pi]["ticker"] = _tk_input
+        st.session_state["portfolio"][_pi]["shares"]  = _sh_input
+        st.session_state["portfolio"][_pi]["entry"]   = _en_input
+
+        # 종목과 매입가가 입력된 경우만 카드 표시
+        if _tk_input and _en_input > 0:
+            _trail_map = {"S(10%)":0.10,"SS(8%)":0.08,"A(12%)":0.12,"익절후(7%)":0.07}
+            _trail_pct = _trail_map.get(_grade_sel, 0.10)
+
+            # 실시간 현재가 + 전날 고점 자동 조회
+            _rt = fetch_realtime_price(_tk_input)
+            _curr_px  = _rt.get("price", _en_input) if _rt else _en_input
+            _day_h    = _rt.get("day_high", _curr_px) if _rt else _curr_px
+            _day_h    = max(_day_h or _curr_px, _curr_px)
+
+            # 핵심 가격 계산 (v2 백테스트 동일)
+            _auto_stop  = round(_day_h * (1 - _trail_pct), 2)
+            _be_trig    = round(_en_input * 1.10, 2)
+            _be_stop_px = round(_en_input * 1.01, 2)
+            _tp1_px     = round(_en_input * 1.18, 2)
+            _gain_now   = (_curr_px / _en_input - 1) * 100
+            _pnl_now    = (_curr_px - _en_input) * _sh_input
+            _pnl_stop   = (_auto_stop - _en_input) * _sh_input
+
+            # 단계 판정
+            if _curr_px <= _auto_stop:
+                _ph_c, _ph_t = "#ef4444", "🛑 손절가 도달 — 즉시 매도"
+            elif _curr_px >= _tp1_px:
+                _ph_c, _ph_t = "#22c55e", "🎯 +18% 달성 — 50% 매도 시점"
+            elif _curr_px >= _be_trig:
+                _ph_c, _ph_t = "#06b6d4", "✅ 브레이크이븐 — 손절가 올리기"
+            elif _gain_now >= 0:
+                _ph_c, _ph_t = "#22c55e", "📈 수익 보유 중"
+            else:
+                _ph_c, _ph_t = "#f59e0b", "📉 매수가 이하"
+
+            with st.expander(
+                f"📊 {_tk_input}  매입 ${_en_input:.2f}  |  현재가 ${_curr_px:.2f}  "
+                f"({_gain_now:+.1f}%)  |  {_ph_t}",
+                expanded=False
+            ):
+                # 5개 핵심 카드
+                _ca, _cb, _cc, _cd, _ce = st.columns(5)
+                with _ca:
+                    st.markdown(f"""
+<div style='background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;'>🛑 오늘 손절가</div>
+<div style='font-size:20px;font-weight:900;color:#ef4444;'>${_auto_stop:.2f}</div>
+<div style='font-size:10px;color:#ef4444;'>고점 ${_day_h:.2f} × {1-_trail_pct:.2f}</div>
+<div style='font-size:9px;color:#5a7299;margin-top:2px;'>자동 갱신됨 ⚡</div>
+</div>""", unsafe_allow_html=True)
+                with _cb:
+                    st.markdown(f"""
+<div style='background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;'>⚡ 브레이크이븐</div>
+<div style='font-size:20px;font-weight:900;color:{"#06b6d4" if _curr_px>=_be_trig else "#f59e0b"};'>${_be_trig:.2f}</div>
+<div style='font-size:10px;color:#f59e0b;'>{"✅ 달성!" if _curr_px>=_be_trig else "+10% 목표"}</div>
+<div style='font-size:9px;color:#5a7299;margin-top:2px;'>→ 손절 ${_be_stop_px:.2f}</div>
+</div>""", unsafe_allow_html=True)
+                with _cc:
+                    st.markdown(f"""
+<div style='background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.3);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;'>✅ 1차 익절</div>
+<div style='font-size:20px;font-weight:900;color:{"#06b6d4" if _curr_px>=_tp1_px else "#22c55e"};'>${_tp1_px:.2f}</div>
+<div style='font-size:10px;color:#22c55e;'>{"✅ 달성!" if _curr_px>=_tp1_px else "+18% 50%청산"}</div>
+<div style='font-size:9px;color:#5a7299;margin-top:2px;'>{_sh_input//2}주 매도</div>
+</div>""", unsafe_allow_html=True)
+                with _cd:
+                    st.markdown(f"""
+<div style='background:rgba(168,85,247,0.07);border:1px solid rgba(168,85,247,0.25);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;'>📊 현재 손익</div>
+<div style='font-size:20px;font-weight:900;color:{"#22c55e" if _gain_now>=0 else "#ef4444"};'>{_gain_now:+.1f}%</div>
+<div style='font-size:10px;color:#5a7299;'>${_curr_px:.2f}</div>
+<div style='font-size:9px;color:{"#22c55e" if _pnl_now>=0 else "#ef4444"};margin-top:2px;'>{"+" if _pnl_now>=0 else ""}${abs(_pnl_now):,.0f}</div>
+</div>""", unsafe_allow_html=True)
+                with _ce:
+                    st.markdown(f"""
+<div style='background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.25);border-radius:10px;padding:10px;text-align:center;'>
+<div style='font-size:10px;color:#5a7299;'>💰 손절 청산시</div>
+<div style='font-size:20px;font-weight:900;color:{"#22c55e" if _pnl_stop>=0 else "#ef4444"};'>{"+" if _pnl_stop>=0 else ""}${abs(_pnl_stop):,.0f}</div>
+<div style='font-size:10px;color:#5a7299;'>{_sh_input}주 기준</div>
+<div style='font-size:9px;color:#5a7299;margin-top:2px;'>${_auto_stop:.2f}에서</div>
+</div>""", unsafe_allow_html=True)
+
+                # 단계별 행동 지침
+                if _curr_px <= _auto_stop:
+                    st.error(f"🚨 손절가 ${_auto_stop:.2f} 도달! 지금 즉시 {_tk_input} 전량 시장가 매도하세요. 이유 불문.")
+                elif _curr_px >= _tp1_px:
+                    st.success(f"🎯 +18% 달성! {_sh_input//2}주 지금 바로 매도 → 손절가를 ${_be_stop_px:.2f}(진입가+1%)로 올리세요 → 잔량 {_sh_input-_sh_input//2}주는 트레일링 {int(_trail_pct*100)}% 계속 적용")
+                elif _curr_px >= _be_trig:
+                    st.info(f"✅ +10% 달성! 지금 즉시 손절 주문을 ${_be_stop_px:.2f}(진입가+1%)로 변경하세요. 이제 최소 +1% 수익 확정.")
+                else:
+                    st.markdown(f"""
+<div style='background:rgba(255,255,255,0.02);border:1px solid #1e3a5f;border-radius:10px;padding:10px 14px;font-size:11px;color:#d8e8ff;line-height:1.9;'>
+<b style='color:#f59e0b;'>①</b> 손절가 <b style='color:#ef4444;'>${_auto_stop:.2f}</b> 이하 도달 시 즉시 전량 매도<br>
+<b style='color:#f59e0b;'>②</b> <b style='color:#f59e0b;'>${_be_trig:.2f}</b>(+10%) 달성 시 → 손절가를 ${_be_stop_px:.2f}로 올리기<br>
+<b style='color:#22c55e;'>③</b> <b style='color:#22c55e;'>${_tp1_px:.2f}</b>(+18%) 달성 시 → {_sh_input//2}주 매도 + 트레일링 7% 전환<br>
+<b style='color:#5a7299;'>④</b> 손절가는 오늘 고점 ${_day_h:.2f} 기준 자동 계산 (매일 자동 갱신)
+</div>""", unsafe_allow_html=True)
+
+                st.caption(f"⚡ 데이터 기준: {_rt.get('time','—') if _rt else '—'} | 손절가 = 고점 ${_day_h:.2f} × {1-_trail_pct:.2f} = ${_auto_stop:.2f}")
+
+        st.markdown("<div style='margin-bottom:6px;'></div>", unsafe_allow_html=True)
+
+    # 삭제 처리
+    if _to_delete:
+        for _di in sorted(_to_delete, reverse=True):
+            if len(st.session_state["portfolio"]) > 1:
+                st.session_state["portfolio"].pop(_di)
+        st.rerun()
+
+    # ── 포트폴리오 요약 ─────────────────────────────────────────
+    _valid_pos = [
+        p for p in st.session_state["portfolio"]
+        if p["ticker"] and p["entry"] > 0
+    ]
+    if len(_valid_pos) >= 2:
+        st.markdown("---")
+        st.markdown("<div style='font-size:13px;font-weight:700;color:#d8e8ff;margin-bottom:10px;'>📋 포트폴리오 요약</div>", unsafe_allow_html=True)
+        _total_invested = 0
+        _total_pnl = 0
+        _summary_cols = st.columns(min(4, len(_valid_pos)))
+        for _si, _sp in enumerate(_valid_pos):
+            _s_rt = fetch_realtime_price(_sp["ticker"])
+            _s_curr = _s_rt.get("price", _sp["entry"]) if _s_rt else _sp["entry"]
+            _s_gain = (_s_curr / _sp["entry"] - 1) * 100 if _sp["entry"] > 0 else 0
+            _s_pnl  = (_s_curr - _sp["entry"]) * _sp["shares"]
+            _total_invested += _sp["entry"] * _sp["shares"]
+            _total_pnl += _s_pnl
+            with _summary_cols[_si % 4]:
+                _sc_v = "#22c55e" if _s_gain >= 0 else "#ef4444"
+                st.markdown(f"""
+<div style='background:rgba(255,255,255,0.03);border:1px solid #1e3a5f;border-radius:10px;padding:10px;text-align:center;margin-bottom:8px;'>
+<div style='font-size:13px;font-weight:800;color:#06b6d4;'>{_sp["ticker"]}</div>
+<div style='font-size:16px;font-weight:700;color:{_sc_v};'>{_s_gain:+.1f}%</div>
+<div style='font-size:10px;color:#5a7299;'>{_sp["shares"]}주 · ${_s_curr:.2f}</div>
+<div style='font-size:10px;color:{_sc_v};'>{"+" if _s_pnl>=0 else ""}${abs(_s_pnl):,.0f}</div>
+</div>""", unsafe_allow_html=True)
+
+        _total_return = _total_pnl / _total_invested * 100 if _total_invested > 0 else 0
+        st.markdown(f"""
+<div style='background:rgba(6,182,212,0.07);border:1px solid rgba(6,182,212,0.25);border-radius:12px;padding:12px 16px;display:flex;gap:24px;'>
+<div><span style='font-size:11px;color:#5a7299;'>총 투자금</span>
+<span style='font-size:14px;font-weight:700;color:#d8e8ff;margin-left:8px;'>${_total_invested:,.0f}</span></div>
+<div><span style='font-size:11px;color:#5a7299;'>총 손익</span>
+<span style='font-size:14px;font-weight:700;color:{"#22c55e" if _total_pnl>=0 else "#ef4444"};margin-left:8px;'>{"+" if _total_pnl>=0 else ""}${abs(_total_pnl):,.0f}</span></div>
+<div><span style='font-size:11px;color:#5a7299;'>수익률</span>
+<span style='font-size:14px;font-weight:700;color:{"#22c55e" if _total_return>=0 else "#ef4444"};margin-left:8px;'>{_total_return:+.1f}%</span></div>
+<div style='margin-left:auto;font-size:10px;color:#5a7299;'>⚡ 실시간 현재가 기준</div>
 </div>""", unsafe_allow_html=True)
