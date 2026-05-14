@@ -77,7 +77,7 @@ html,body,[class*="css"],.stApp{background:var(--bg)!important;color:var(--text)
 .stButton>button{background:linear-gradient(135deg,#06b6d4,#3b82f6)!important;color:white!important;border:none!important;border-radius:10px!important;font-weight:800!important;font-size:14px!important;padding:10px 24px!important;}
 div[data-testid="stExpander"]{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:12px!important;}
 /* 탭5 보유종목 상세보기는 정상 표시 */
-div[data-testid="stExpander"] summary {
+div[data-testid="stExpander"] > details > summary
     font-size: 13px !important;
     font-weight: 600 !important;
     color: var(--text) !important;
