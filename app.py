@@ -1736,16 +1736,11 @@ with _tabs[4]:
             else:
                 _ph_c, _ph_t = "#f59e0b", "📉 매수가 이하"
 
-             st.markdown(f"""
-             <div style='background:#0f1828;border:1px solid {_ph_c};border-radius:12px 12px 0 0;padding:12px 16px;margin-top:10px;'>
-             <span style='font-size:15px;font-weight:900;color:#d8e8ff;'>📊 {_tk_input}</span>
-             <span style='font-size:13px;color:#5a7299;margin-left:8px;'>매입 ${_en_input:.2f}</span>
-             <span style='font-size:13px;color:#22c55e;margin-left:8px;'>현재가 ${_curr_px:.2f}</span>
-             <span style='font-size:15px;font-weight:800;color:{_ph_c};margin-left:8px;'>({_gain_now:+.1f}%) | {_ph_t}</span>
-             </div>
-             """, unsafe_allow_html=True)
-
-             with st.container():
+            with st.expander(
+                f"📊 {_tk_input}  매입 ${_en_input:.2f}  |  현재가 ${_curr_px:.2f}  "
+                f"({_gain_now:+.1f}%)  |  {_ph_t}",
+                expanded=False
+            ):
                 # 5개 핵심 카드
                 _ca, _cb, _cc, _cd, _ce = st.columns(5)
                 with _ca:
