@@ -1750,11 +1750,23 @@ with _tabs[4]:
             else:
                 _ph_c, _ph_t = "#f59e0b", "📉 매수가 이하"
 
-            with st.expander(
-                f"📊 {_tk_input}  매입 ${_en_input:.2f}  |  현재가 ${_curr_px:.2f}  "
-                f"({_gain_now:+.1f}%)  |  {_ph_t}",
-                expanded=False
-            ):
+            # ── 상세보기 토글 버튼 ─────────────────────────────
+            _exp_key = f"exp_{_pi}"
+            if _exp_key not in st.session_state:
+                st.session_state[_exp_key] = False
+            _is_open = st.session_state[_exp_key]
+
+            _toggle_label = (
+                f"{'▲' if _is_open else '▼'}  📊 {_tk_input}  "
+                f"매입 ${_en_input:.2f}  |  현재 ${_curr_px:.2f} ({_gain_now:+.1f}%)  "
+                f"|  {_ph_t}"
+            )
+            if st.button(_toggle_label, key=f"btn_{_pi}",
+                         use_container_width=True):
+                st.session_state[_exp_key] = not _is_open
+                st.rerun()
+
+            if _is_open:
                 # 5개 핵심 카드
                 _ca, _cb, _cc, _cd, _ce = st.columns(5)
                 with _ca:
