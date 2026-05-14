@@ -1745,7 +1745,7 @@ with _tabs[4]:
              </div>
              """, unsafe_allow_html=True)
 
-with st.container():
+             with st.container():
                 # 5개 핵심 카드
                 _ca, _cb, _cc, _cd, _ce = st.columns(5)
                 with _ca:
