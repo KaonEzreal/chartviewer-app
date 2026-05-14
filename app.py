@@ -75,16 +75,30 @@ html,body,[class*="css"],.stApp{background:var(--bg)!important;color:var(--text)
 .stTextInput>div>div>input{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:10px!important;color:var(--text)!important;font-size:15px!important;}
 .stSelectbox>div>div{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:10px!important;}
 .stButton>button{background:linear-gradient(135deg,#06b6d4,#3b82f6)!important;color:white!important;border:none!important;border-radius:10px!important;font-weight:800!important;font-size:14px!important;padding:10px 24px!important;}
-div[data-testid="stExpander"]{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:12px!important;}
-/* 탭5 보유종목 상세보기는 정상 표시 */
-div[data-testid="stExpander"] > details > summary {
+/* expander — 탭5 보유종목 상세보기용 */
+div[data-testid="stExpander"] {
+    background: var(--card2) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: 12px !important;
+}
+div[data-testid="stExpander"] summary {
+    display: flex !important;
+    align-items: center !important;
     font-size: 13px !important;
     font-weight: 600 !important;
     color: var(--text) !important;
     padding: 10px 14px !important;
+    list-style: none !important;
 }
+/* 기본 화살표(arrow) 완전 제거 */
+div[data-testid="stExpander"] summary::-webkit-details-marker { display: none !important; }
+div[data-testid="stExpander"] summary::marker { display: none !important; }
+div[data-testid="stExpander"] summary > div:first-child { display: none !important; }
+div[data-testid="stExpander"] [data-testid="stExpanderToggleIcon"] { display: none !important; }
+div[data-testid="stExpander"] svg { display: none !important; }
 div[data-testid="stExpander"] summary:hover {
     background: rgba(6,182,212,0.05) !important;
+    border-radius: 12px !important;
 }
 footer,header,#MainMenu{display:none!important;}
 </style>
