@@ -75,10 +75,17 @@ html,body,[class*="css"],.stApp{background:var(--bg)!important;color:var(--text)
 .stTextInput>div>div>input{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:10px!important;color:var(--text)!important;font-size:15px!important;}
 .stSelectbox>div>div{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:10px!important;}
 .stButton>button{background:linear-gradient(135deg,#06b6d4,#3b82f6)!important;color:white!important;border:none!important;border-radius:10px!important;font-weight:800!important;font-size:14px!important;padding:10px 24px!important;}
-div[data-testid="stExpander"]{background:transparent!important;border:none!important;border-radius:0!important;padding:0!important;margin:0!important;}
-div[data-testid="stExpander"] > details > summary{display:none!important;}
-div[data-testid="stExpander"] > details{border:none!important;background:transparent!important;}
-div[data-testid="stExpander"] > details > div{padding:0!important;}
+div[data-testid="stExpander"]{background:var(--card2)!important;border:1px solid var(--border)!important;border-radius:12px!important;}
+/* 탭5 보유종목 상세보기는 정상 표시 */
+div[data-testid="stExpander"] summary {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: var(--text) !important;
+    padding: 10px 14px !important;
+}
+div[data-testid="stExpander"] summary:hover {
+    background: rgba(6,182,212,0.05) !important;
+}
 footer,header,#MainMenu{display:none!important;}
 </style>
 """, unsafe_allow_html=True)
@@ -328,7 +335,7 @@ with _tabs[0]:
     tp=sig.trade_plan
 
     # ── 매매 가이드 패널 ─────────────────────────────────────────
-    with st.expander("📋 v2 백테스트 실전 매매 가이드", expanded=True):
+    with st.container():  # 매매 가이드 패널 (항상 표시)
 
         st.markdown(f"""
 <div style='background:linear-gradient(135deg,#0c1828,#0f1e30);border:1px solid #1e3a5f;border-radius:16px;padding:18px 20px;'>
@@ -1690,13 +1697,15 @@ with _tabs[4]:
             if st.button("❌", key=f"port_del_{_pi}", help="이 종목 삭제"):
                 _to_delete.append(_pi)
 
-        # session_state 업데이트
-        st.session_state["portfolio"][_pi]["ticker"] = _tk_input
+        # session_state 업데이트 (ticker는 반드시 대문자로)
+        _tk_upper = _tk_input.strip().upper()
+        st.session_state["portfolio"][_pi]["ticker"] = _tk_upper
         st.session_state["portfolio"][_pi]["shares"]  = _sh_input
         st.session_state["portfolio"][_pi]["entry"]   = _en_input
 
         # 종목과 매입가가 입력된 경우만 카드 표시
-        if _tk_input and _en_input > 0:
+        if _tk_upper and _en_input > 0:
+            _tk_input = _tk_upper  # 이후 코드에서도 대문자 사용
             _trail_map = {"S(10%)":0.10,"SS(8%)":0.08,"A(12%)":0.12,"익절후(7%)":0.07}
             _trail_pct = _trail_map.get(_grade_sel, 0.10)
 
