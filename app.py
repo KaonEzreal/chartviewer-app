@@ -1756,11 +1756,9 @@ with _tabs[4]:
                 st.session_state[_exp_key] = False
             _is_open = st.session_state[_exp_key]
 
-            # $ 기호 제거 — Streamlit 버튼이 $...$를 LaTeX로 파싱하는 버그 방지
-            _arrow = "▲" if _is_open else "▼"
             _toggle_label = (
-                f"{_arrow}  {_tk_input}  "
-                f"매입 {_en_input:.2f}  |  현재 {_curr_px:.2f} ({_gain_now:+.1f}%)  "
+                f"{'▲' if _is_open else '▼'}  📊 {_tk_input}  "
+                f"매입 ${_en_input:.2f}  |  현재 ${_curr_px:.2f} ({_gain_now:+.1f}%)  "
                 f"|  {_ph_t}"
             )
             if st.button(_toggle_label, key=f"btn_{_pi}",
